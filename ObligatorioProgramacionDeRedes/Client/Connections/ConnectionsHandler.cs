@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Configuration;
+using System.Text;
 
 namespace Client.Connections
 {
@@ -27,6 +28,11 @@ namespace Client.Connections
             _tcpClient.Connect(_serverIpEndPoint);
             _state = ClientState.Up;
         }
+
+        // public void SendRequest(string word)
+        // {
+        //
+        // }
 
         public void ShutDown()
         {

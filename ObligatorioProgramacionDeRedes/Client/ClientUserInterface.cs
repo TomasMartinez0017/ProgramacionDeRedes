@@ -16,11 +16,13 @@ namespace Client
         {
             _connectionsHandler.Connect();
             Console.WriteLine("Connection to Server Started");
+            
             while (_connectionsHandler.IsClientStateUp())
             {
-                //pruebas
-                Console.WriteLine("Press any key to shut down connection");
-                Console.ReadLine();
+                Console.WriteLine("Press enter key to end client");
+
+                string option = Console.ReadLine();
+                
                 _connectionsHandler.ShutDown();
             }
         }
