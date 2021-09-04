@@ -9,20 +9,21 @@ namespace Server
         static void Main(string[] args)
         {
             Console.WriteLine("Starting Server");
-            Thread connectionsThread = new Thread(() => HandleClient());
-            connectionsThread.Start();
+
+            HandleClient();
         }
 
         public static void HandleClient()
         {
         
             ConnectionsHandler connectionsHandler = new ConnectionsHandler();
-            Thread listeningThread = new Thread(() => connectionsHandler.StartListening());
-            listeningThread.Start();
+            connectionsHandler.StartListening();
             
+            /* Como hago esto?
             Console.WriteLine("Press any key to shut down the server");
             Console.ReadLine();
             connectionsHandler.StartShutServerDown();
+            */
        
         }
     }

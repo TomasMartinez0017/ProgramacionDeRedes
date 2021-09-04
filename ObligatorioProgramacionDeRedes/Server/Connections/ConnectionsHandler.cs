@@ -11,16 +11,10 @@ namespace Server.Connections
         private IPAddress _serverIp;
         private int _serverPort;
         private TcpListener _tcpListener;
-        private List<Connection> _connections;
         private ServerState _serverState;
-        private object _serverStateLocker;
-        private object _connectionsListLocker;
 
         public ConnectionsHandler()
         {
-             _serverStateLocker = new object();
-            _connectionsListLocker = new object();
-            _connections = new List<Connection>();
             _serverIp= IPAddress.Parse(ConfigurationManager.AppSettings["ServerIP"]);
             _serverPort= Int32.Parse(ConfigurationManager.AppSettings["ServerPort"]);
             _serverState = ServerState.Down;
@@ -31,36 +25,23 @@ namespace Server.Connections
         {
             _tcpListener.Start(10);
             _serverState = ServerState.Up;
+            
             while (IsServerUp())
             {
-              try
-              {
-                    _tcpListener.AcceptTcpClient();
-                    Console.WriteLine("Accepted new client connection");
-              }
-              catch (SocketException se)
-              {
-                    Console.WriteLine($"The client connection was interrupted, message {se.Message}");
-              } 
+                _tcpListener.AcceptTcpClient();
+                Console.WriteLine("Accepted new client connection");
             }
-
         }
 
         public void StartShutServerDown()
         {
-            lock (_serverStateLocker)
-            {
-              _serverState=ServerState.ShutingDown;
-              _tcpListener.Stop();
-            }
+            _serverState=ServerState.ShutingDown;
+            _tcpListener.Stop();
         }
 
         public bool IsServerUp()
         {
-            lock (_serverStateLocker)
-            {
-             return _serverState == ServerState.Up;
-            }
+            return _serverState == ServerState.Up;
         }
     }
 }

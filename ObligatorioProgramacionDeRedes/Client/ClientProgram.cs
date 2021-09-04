@@ -8,8 +8,9 @@ namespace Client
         static void Main(string[] args)
         {
             ClientUserInterface UI = new ClientUserInterface();
-            Thread startClientThread = new Thread(() => UI.StartClient());
-            startClientThread.Start();
+            //Thread startClientThread = new Thread(() => UI.StartClient());
+            //startClientThread.Start();
+            UI.StartClient();
         }
     }
 }
