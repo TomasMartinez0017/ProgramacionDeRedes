@@ -2,15 +2,19 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Configuration;
+using System.IO;
 using System.Text;
+using Client.Connections;
+using Protocol;
 
-namespace Client.Connections
+namespace Client
 {
     public class ConnectionsHandler
     {
         private TcpClient _tcpClient;
         private IPEndPoint _serverIpEndPoint;
-        private ClientState _state;
+        private ProtocolHandler _protocol;
+        private ClientState _state= new ClientState();
 
         public ConnectionsHandler()
         {
@@ -29,10 +33,23 @@ namespace Client.Connections
             _state = ClientState.Up;
         }
 
-        // public void SendRequest(string word)
-        // {
-        //
-        // }
+        public Frame SendRequestAndGetResponse(Frame request)
+        {
+            try
+            {
+                _protocol.Send(request);
+                //Frame serverResponse = _protocol.Receive();
+                //return serverResponse;
+                return null; //retorno null solo para que el metodo compile
+
+            }
+            catch (IOException)
+            {
+                Console.WriteLine("Server Down");
+                ShutDown();
+                return null;
+            }
+        }
 
         public void ShutDown()
         {
