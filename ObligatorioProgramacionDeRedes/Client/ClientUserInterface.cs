@@ -7,6 +7,8 @@ namespace Client
     public class ClientUserInterface
     {
         private ConnectionsHandler _connectionsHandler;
+        private RequestHandler _requestHandler;
+        private ResponseHandler _responseHandler;
 
         public ClientUserInterface()
         {
@@ -22,25 +24,28 @@ namespace Client
             {
                 int option = DeployMenu();
 
-                if (option == 0)
+                if (option == -1)
                 {
                     _connectionsHandler.ShutDown();
                 }
                 else
                 {
-                    //Build request and send to server
-                    //Frame request = BuildRequest(option);
-                    //Frame response = _connectionsHandler.SendRequest(request);
-                    //Receive response from server
+                    Frame request = _requestHandler.BuildRequest(option);
+                    
+                    Frame response = _connectionsHandler.SendRequestAndGetResponse(request);
+                    
+                    if (response != null)
+                    {
+                        string data = _responseHandler.ProcessResponse(response);
+                        Console.WriteLine(response);
+                    }
                 }
-                
-                
             }
         }
 
         private int DeployMenu()
         {
-            int option = 0;
+            int option = -1;
             Console.WriteLine("-----VAPOR SYSTEM-----");
             Console.WriteLine("Chose an option:");
             Console.WriteLine("0 - Disconnect form server");
@@ -61,7 +66,7 @@ namespace Client
                 option = DeployMenu();
             }
 
-            return option;
+            return option - 1;
 
         }
         

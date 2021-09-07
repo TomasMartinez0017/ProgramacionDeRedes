@@ -19,10 +19,10 @@ namespace Client
         public ConnectionsHandler()
         {
             _serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ConfigurationManager.AppSettings["ServerIP"]), 
-                                            Int32.Parse(ConfigurationManager.AppSettings["ServerPort"]));
+                Int32.Parse(ConfigurationManager.AppSettings["ServerPort"]));
 
             _tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(ConfigurationManager.AppSettings["ClientIP"]), 
-                    0));
+                0));
             _state = ClientState.Down;
         }
 
@@ -38,10 +38,8 @@ namespace Client
             try
             {
                 _protocol.Send(request);
-                //Frame serverResponse = _protocol.Receive();
-                //return serverResponse;
-                return null; //retorno null solo para que el metodo compile
-
+                Frame serverResponse = _protocol.Receive();
+                return serverResponse;
             }
             catch (IOException)
             {
@@ -62,8 +60,6 @@ namespace Client
         {
             return _state == ClientState.Up;
         }
-
-
 
     }
 }
