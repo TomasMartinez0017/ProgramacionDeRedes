@@ -24,6 +24,8 @@ namespace Client
             _tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(ConfigurationManager.AppSettings["ClientIP"]), 
                 0));
             _state = ClientState.Down;
+            
+            _protocol = new ProtocolHandler(_tcpClient);
         }
 
         public void Connect()

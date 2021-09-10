@@ -13,6 +13,7 @@ namespace Client
         public ClientUserInterface()
         {
             _connectionsHandler = new ConnectionsHandler();
+            _requestHandler = new RequestHandler();
         }
 
         public void StartClient()

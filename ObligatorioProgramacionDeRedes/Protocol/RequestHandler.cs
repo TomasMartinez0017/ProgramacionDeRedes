@@ -8,7 +8,7 @@ namespace Protocol
         public Frame BuildRequest(int optionSelected)
         {
             Frame requestFrame = new Frame();
-            requestFrame.Header = (int) Header.Request;
+            requestFrame.Header =  (int) Header.Request;
             requestFrame.Command = optionSelected;
 
             switch ((Command) optionSelected)
@@ -27,7 +27,7 @@ namespace Protocol
             string gameName = Console.ReadLine();
             Console.WriteLine("Genre:");
             string gameGenre = Console.ReadLine();
-            byte[] gameData = Encoding.UTF8.GetBytes($"{gameName}_{gameGenre}");
+            byte[] gameData = Encoding.UTF8.GetBytes($"{gameName}#{gameGenre}");
             requestFrame.Data = gameData;
             requestFrame.DataLength = gameData.Length;
 

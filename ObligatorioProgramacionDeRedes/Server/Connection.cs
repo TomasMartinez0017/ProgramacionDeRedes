@@ -16,6 +16,7 @@ namespace Server.Connections
         {
             _tcpClient = tcpClient;
             _state = ConnectionState.Down;
+            _protocol = new ProtocolHandler(tcpClient);
         }
 
         public void StartConnection()
@@ -23,7 +24,7 @@ namespace Server.Connections
             _state = ConnectionState.Up;
             while (_state == ConnectionState.Up)
             {
-                //HandleRequests();
+                HandleRequests();
             }
         }
 
@@ -32,14 +33,11 @@ namespace Server.Connections
             _tcpClient.Close();
         }
 
-        // private void HandleRequests()
-        // {
-        //     try
-        //     {
-        //         Frame request = _protocol.Receive();
-        //         Frame response = _responseHandler.GetResponse(request);
-        //     }
-        // }
+        private void HandleRequests()
+        {
+            Frame request = _protocol.Receive();
+            //Frame response = _responseHandler.GetResponse(request);
+        }
 
     }
 }

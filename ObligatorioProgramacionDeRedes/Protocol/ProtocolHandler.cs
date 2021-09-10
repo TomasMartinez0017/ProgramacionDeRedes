@@ -30,10 +30,10 @@ namespace Protocol
             {
                 if(currentSlot < slots)
                 {
-                    var dataToSend = new byte[32768];
-                    Array.Copy(data, offset, dataToSend, 0, 32768);
+                    var dataToSend = new byte[FrameConstants.MaxPacketSize];
+                    Array.Copy(data, offset, dataToSend, 0, FrameConstants.MaxPacketSize);
                     stream.Write(dataToSend);
-                    offset += 32768;
+                    offset += FrameConstants.MaxPacketSize;
                 }
                 else
                 {
@@ -52,9 +52,9 @@ namespace Protocol
         {
             Frame frame = new Frame();
 
-            frame.Header = BitConverter.ToInt32(ReceiveDividedData(3, 1));
-            frame.Command = BitConverter.ToInt32(ReceiveDividedData(2, 1));
-            frame.DataLength = BitConverter.ToInt32(ReceiveDividedData(4, 1));
+            frame.Header = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.HeaderLength, 1));
+            frame.Command = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.CommandLength, 1));
+            frame.DataLength = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.DataLength, 1));
             frame.Data = ReceiveDividedData(frame.DataLength, AmountOfSlotsNeeded(frame));
 
             return frame;
@@ -71,9 +71,9 @@ namespace Protocol
             {
                 if(currentSlot < slots)
                 {
-                    byte[] receivedBytes = Read(32768, stream);
-                    Array.Copy(receivedBytes,0,buffer,offset,32768);
-                    offset += 32768;
+                    byte[] receivedBytes = Read(FrameConstants.MaxPacketSize, stream);
+                    Array.Copy(receivedBytes,0,buffer,offset,FrameConstants.MaxPacketSize);
+                    offset += FrameConstants.MaxPacketSize;
                 }
                 else
                 {
@@ -107,13 +107,13 @@ namespace Protocol
         {
             int slots = 0;
             
-            if (frame.DataLength % 32768 == 0)
+            if (frame.DataLength % FrameConstants.MaxPacketSize == 0)
             {
-                slots = frame.DataLength / 32768;
+                slots = frame.DataLength / FrameConstants.MaxPacketSize;
             }
             else
             {
-                slots = (frame.DataLength / 32768) + 1;
+                slots = (frame.DataLength / FrameConstants.MaxPacketSize) + 1;
             }
 
             return slots;

@@ -4,9 +4,9 @@ namespace Domain
 {
     public class Game
     {
-        private string Title { get; set; }
+        public string Title { get; set; }
         
-        private string Genre { get; set; }
+        public string Genre { get; set; }
         
         //private int ScoreAverage { get; set; }
         
