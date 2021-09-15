@@ -14,6 +14,7 @@ namespace Client
         {
             _connectionsHandler = new ConnectionsHandler();
             _requestHandler = new RequestHandler();
+            _responseHandler = new ResponseHandler();
         }
 
         public void StartClient()
@@ -38,7 +39,7 @@ namespace Client
                     if (response != null)
                     {
                         string data = _responseHandler.ProcessResponse(response);
-                        Console.WriteLine(response);
+                        Console.WriteLine(data);
                     }
                 }
             }

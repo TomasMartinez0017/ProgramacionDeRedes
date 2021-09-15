@@ -8,13 +8,11 @@ namespace Domain
         
         public string Genre { get; set; }
         
-        //private int ScoreAverage { get; set; }
+        private int ScoreAverage { get; set; }
         
-        //private string Description { get; set; }
+        private string Description { get; set; }
         
-        //private Image Image { get; set; }
-        
-        //private List<Review> Reviews { get; set; }
+        //private string Image { get; set; }
 
     }
 }

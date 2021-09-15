@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading;
-using Server.Connections;
+using Server;
 
 namespace Server
 {

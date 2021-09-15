@@ -1,4 +1,4 @@
-﻿namespace Server.Connections
+﻿namespace Server
 {
     public enum ServerState
     {

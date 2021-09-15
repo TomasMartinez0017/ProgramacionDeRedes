@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using Domain;
 using Protocol;
 
-namespace Server.Connections
+namespace Server
 {
     public class Connection
     {
@@ -17,6 +17,7 @@ namespace Server.Connections
             _tcpClient = tcpClient;
             _state = ConnectionState.Down;
             _protocol = new ProtocolHandler(tcpClient);
+            _responseHandler = new ResponseHandler();
         }
 
         public void StartConnection()
@@ -36,7 +37,9 @@ namespace Server.Connections
         private void HandleRequests()
         {
             Frame request = _protocol.Receive();
-            //Frame response = _responseHandler.GetResponse(request);
+            Frame response = _responseHandler.GetResponse(request);
+            
+            _protocol.Send(response);
         }
 
     }
