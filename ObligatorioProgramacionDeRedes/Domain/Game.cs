@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using CustomExceptions;
 
 namespace Domain
 {
@@ -8,11 +10,21 @@ namespace Domain
         
         public string Genre { get; set; }
         
-        private int ScoreAverage { get; set; }
+        public string ScoreAverage { get; set; }
         
-        private string Description { get; set; }
+        public string Description { get; set; }
         
         //private string Image { get; set; }
+
+        public void ValidGame()
+        {
+            if (String.IsNullOrEmpty(this.Title) || String.IsNullOrEmpty(this.Genre) ||
+                String.IsNullOrEmpty(this.ScoreAverage) ||
+                String.IsNullOrEmpty(this.Description))
+            {
+                throw new InvalidGameException(MessageException.InvalidGameException);
+            }
+        }
 
     }
 }

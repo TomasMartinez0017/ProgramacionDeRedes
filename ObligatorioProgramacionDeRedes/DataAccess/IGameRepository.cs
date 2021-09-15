@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Domain;
 
 namespace DataAccess
@@ -8,5 +9,7 @@ namespace DataAccess
         void AddGame(Game game);
 
         bool GameExists(Game game);
+
+        List<Game> GetAllGames();
     }
 }

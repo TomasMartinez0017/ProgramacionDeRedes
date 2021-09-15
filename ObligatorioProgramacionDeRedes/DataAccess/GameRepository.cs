@@ -53,5 +53,14 @@ namespace DataAccess
                 return false;
             }
         }
+
+        public List<Game> GetAllGames()
+        {
+            lock (_gamesLocker)
+            {
+                List<Game> copyOfGames = new List<Game>(_games);
+                return copyOfGames;
+            }
+        }
     }
 }

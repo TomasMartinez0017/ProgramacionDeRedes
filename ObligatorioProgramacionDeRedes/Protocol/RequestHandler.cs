@@ -14,6 +14,8 @@ namespace Protocol
 
             switch ((Command) optionSelected)
             {
+                case Command.ShowCatalog:
+                    break;
                 case Command.PublishGame:
                     BuildPublishGameRequest(requestFrame);
                     break;

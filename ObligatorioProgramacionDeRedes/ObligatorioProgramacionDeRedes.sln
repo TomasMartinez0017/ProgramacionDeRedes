@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Protocol", "Protocol\Protoc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{08476D90-835D-45B7-82DF-D5437ACB4F2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomExceptions", "CustomExceptions\CustomExceptions.csproj", "{6DAC8535-B15A-4884-8039-A4015CCD7B4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{08476D90-835D-45B7-82DF-D5437ACB4F2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{08476D90-835D-45B7-82DF-D5437ACB4F2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{08476D90-835D-45B7-82DF-D5437ACB4F2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6DAC8535-B15A-4884-8039-A4015CCD7B4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6DAC8535-B15A-4884-8039-A4015CCD7B4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6DAC8535-B15A-4884-8039-A4015CCD7B4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6DAC8535-B15A-4884-8039-A4015CCD7B4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

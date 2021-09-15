@@ -67,9 +67,8 @@ namespace Client
                 Console.WriteLine("Invalid option");
                 option = DeployMenu();
             }
-
+            
             return option - 1;
-
         }
         
     }
