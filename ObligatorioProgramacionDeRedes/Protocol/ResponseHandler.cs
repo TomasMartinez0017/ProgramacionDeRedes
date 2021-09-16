@@ -12,12 +12,16 @@ namespace Protocol
         public string ProcessResponse(Frame frame)
         {
             string response = null;
+            
             switch ((Command) frame.Command)
             {
                 case Command.ShowCatalog:
                     response = ProcessShowCatalogResponse(frame.Data);
                     break;
                 case Command.PublishGame:
+                    response = Encoding.UTF8.GetString(frame.Data);
+                    break;
+                case Command.SignUp:
                     response = Encoding.UTF8.GetString(frame.Data);
                     break;
             }
@@ -36,6 +40,9 @@ namespace Protocol
                     break;
                 case Command.PublishGame:
                     response = CreatePublishGameResponse(frame);
+                    break;
+                case Command.SignUp:
+                    response = CreateSignUpResponse(frame);
                     break;
             }
 
@@ -178,6 +185,25 @@ namespace Protocol
             
             return catalogResponse;
 
+        }
+
+        Frame CreateSignUpResponse(Frame frame)
+        {
+            string username = Encoding.UTF8.GetString(frame.Data);
+            
+            User userToAdd = new User();
+            userToAdd.Username = username;
+            
+            UserRepository repository = UserRepository.GetInstance();
+            repository.AddUser(userToAdd);
+            
+            Frame response = new Frame();
+            response.Command = (int) Command.SignUp;
+            response.Header = (int) Header.Response;
+            response.Data = frame.Data;
+            response.DataLength = response.Data.Length;
+
+            return response;
         }
     }
 }

@@ -1,5 +1,8 @@
 ﻿using System;
+using Domain;
+using System.Collections.Specialized;
 using Client.Connections;
+using DataAccess;
 using Protocol;
 
 namespace Client
@@ -21,6 +24,7 @@ namespace Client
         {
             _connectionsHandler.Connect();
             Console.WriteLine("Connection to Server Started");
+            User user = null;
             
             while (_connectionsHandler.IsClientStateUp())
             {
@@ -32,13 +36,19 @@ namespace Client
                 }
                 else
                 {
-                    Frame request = _requestHandler.BuildRequest(option);
+                    Frame request = _requestHandler.BuildRequest(option, user);
                     
                     Frame response = _connectionsHandler.SendRequestAndGetResponse(request);
                     
-                    if (response != null)
+                    string data = _responseHandler.ProcessResponse(response);
+                        
+                    if ((int)response.Command == (int)Command.SignUp)
                     {
-                        string data = _responseHandler.ProcessResponse(response);
+                        UserRepository repository = UserRepository.GetInstance();
+                        user = repository.GetUser(data);
+                    }
+                    else
+                    {
                         Console.WriteLine(data);
                     }
                 }
@@ -58,7 +68,8 @@ namespace Client
             Console.WriteLine("5 - Update game");
             Console.WriteLine("6 - Delete game");
             Console.WriteLine("7 - Search game");
-            Console.WriteLine("8 - Disconnect from server");
+            Console.WriteLine("8 - Sign up");
+            Console.WriteLine("9 - Log in");
 
             option = Convert.ToInt32(Console.ReadLine());
 
@@ -68,8 +79,8 @@ namespace Client
                 option = DeployMenu();
             }
             
-            return option - 1;
+            return option - 1; //Comandos arrancan en 0 por eso debemos corregir restando 1
         }
-        
+
     }
 }

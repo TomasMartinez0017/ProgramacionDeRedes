@@ -9,6 +9,8 @@
         UpdateGame,
         DeleteGame,
         SearchGame,
+        SignUp,
+        LogIn
         
     }
 }

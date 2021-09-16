@@ -5,8 +5,14 @@ namespace Domain
 {
     public class User
     {
-        private int Id { get; set; }
+        public string Username { get; set; }
 
-        private List<Game> Games { get; set; }
+        public List<Game> Games { get; set; }
+
+        public User()
+        {
+            this.Games = new List<Game>();
+        }
+        
     }
 }

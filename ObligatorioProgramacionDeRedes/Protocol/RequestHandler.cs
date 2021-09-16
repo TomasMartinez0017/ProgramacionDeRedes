@@ -1,4 +1,5 @@
 ﻿using System;
+using Domain;
 using System.Text;
 using Microsoft.VisualBasic.CompilerServices;
 
@@ -6,7 +7,7 @@ namespace Protocol
 {
     public class RequestHandler
     {
-        public Frame BuildRequest(int optionSelected)
+        public Frame BuildRequest(int optionSelected, User user)
         {
             Frame requestFrame = new Frame();
             requestFrame.Header =  (int) Header.Request;
@@ -18,6 +19,9 @@ namespace Protocol
                     break;
                 case Command.PublishGame:
                     BuildPublishGameRequest(requestFrame);
+                    break;
+                case Command.SignUp:
+                    BuildSignUpRequest(requestFrame);
                     break;
             }
 
@@ -37,6 +41,17 @@ namespace Protocol
             byte[] gameData = Encoding.UTF8.GetBytes($"{gameName}#{gameGenre}#{gameScore}#{gameDescription}");
             requestFrame.Data = gameData;
             requestFrame.DataLength = gameData.Length;
+
+        }
+        
+        private void BuildSignUpRequest(Frame requestFrame)
+        {
+            Console.WriteLine("-----SIGN UP-----");
+            Console.WriteLine("Enter username:");
+            string username = Console.ReadLine();
+            byte[] userData = Encoding.UTF8.GetBytes(username);
+            requestFrame.Data = userData;
+            requestFrame.DataLength = userData.Length;
 
         }
     }
