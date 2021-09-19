@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using CustomExceptions;
 using Domain;
 namespace DataAccess
 {
@@ -50,13 +51,23 @@ namespace DataAccess
                         userToReturn = user;
                     }
                 }
-
-                if (userToReturn == null)
-                {
-                    return null;
-                }
-
                 return userToReturn;
+            }
+        }
+
+        public bool UserExists(string username)
+        {
+            lock (_usersLocker)
+            {
+                foreach (User user in _users)
+                {
+                    if (user.Username.Equals(username))
+                    {
+                        return true;
+                    }
+                }
+                
+                return false;
             }
         }
     }

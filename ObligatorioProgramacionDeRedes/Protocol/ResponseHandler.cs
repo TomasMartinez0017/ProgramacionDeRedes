@@ -24,12 +24,15 @@ namespace Protocol
                 case Command.SignUp:
                     response = Encoding.UTF8.GetString(frame.Data);
                     break;
+                case Command.LogIn:
+                    response = Encoding.UTF8.GetString(frame.Data);
+                    break;
             }
 
             return response;
         }
 
-        public Frame GetResponse(Frame frame)
+        public Frame GetResponse(Frame frame, List<User> usersConnected)
         {
             Frame response = null;
 
@@ -43,6 +46,9 @@ namespace Protocol
                     break;
                 case Command.SignUp:
                     response = CreateSignUpResponse(frame);
+                    break;
+                case Command.LogIn:
+                    response = CreateLogInResponse(frame, usersConnected);
                     break;
             }
 
@@ -65,11 +71,13 @@ namespace Protocol
                 if (!repository.GameExists(newGame))
                 {
                     repository.AddGame(newGame);
+                    response.Status = (int) Status.Ok;
                     message = "Game published";
                 }
                 else
                 {
                     message = "ERROR: The game you are trying to publish already exists";
+                    response.Status = (int) Status.Error;
                 }
 
                 response.Data = Encoding.UTF8.GetBytes(message);
@@ -80,6 +88,7 @@ namespace Protocol
             {
                 response.Data = Encoding.UTF8.GetBytes(e.Message);
                 response.DataLength = response.Data.Length;
+                response.Status = (int) Status.Error;
                 return response;
             }
             
@@ -110,7 +119,7 @@ namespace Protocol
 
             response.Data = serializedList;
             response.DataLength = response.Data.Length;
-
+            response.Status = (int) Status.Ok;
             return response;
         }
 
@@ -187,23 +196,79 @@ namespace Protocol
 
         }
 
-        Frame CreateSignUpResponse(Frame frame)
+        private Frame CreateSignUpResponse(Frame frame)
         {
-            string username = Encoding.UTF8.GetString(frame.Data);
-            
-            User userToAdd = new User();
-            userToAdd.Username = username;
-            
-            UserRepository repository = UserRepository.GetInstance();
-            repository.AddUser(userToAdd);
-            
             Frame response = new Frame();
             response.Command = (int) Command.SignUp;
             response.Header = (int) Header.Response;
-            response.Data = frame.Data;
-            response.DataLength = response.Data.Length;
+            response.Status = (int) Status.Ok;
+            
+            string username = Encoding.UTF8.GetString(frame.Data);
 
+            UserRepository repository = UserRepository.GetInstance();
+
+            if (!repository.UserExists(username))
+            {
+                User userToAdd = new User();
+                userToAdd.Username = username;
+                repository.AddUser(userToAdd);
+                
+                response.Data = frame.Data;
+                response.DataLength = response.Data.Length;
+            }
+            else
+            {
+                response.Data = Encoding.UTF8.GetBytes("ERROR: User already exist.");
+                response.Status = (int) Status.Error;
+                response.DataLength = response.Data.Length;
+            }
+            
             return response;
+        }
+
+        private Frame CreateLogInResponse(Frame frame, List<User> usersConnected)
+        {
+            Frame response = new Frame();
+            response.Command = (int) Command.LogIn;
+            response.Header = (int) Header.Response;
+            response.Status = (int) Status.Ok;
+            string username = Encoding.UTF8.GetString(frame.Data);
+            UserRepository repository = UserRepository.GetInstance();
+
+            if (UserAlreadyLoggedIn(username, usersConnected))
+            {
+                response.Data = response.Data = Encoding.UTF8.GetBytes("ERROR: User already has an active session");
+                response.DataLength = response.Data.Length;
+                response.Status = (int) Status.Error;
+                return response;
+            }
+            if(repository.UserExists(username))
+            {
+                repository.UserExists(username);
+                response.Data = frame.Data;
+                response.DataLength = response.Data.Length;
+            }
+            else
+            {
+                response.Data = Encoding.UTF8.GetBytes("ERROR: User does not exist.");
+                response.DataLength = response.Data.Length;
+                response.Status = (int) Status.Error;
+            }
+            
+            return response;
+        }
+
+        private bool UserAlreadyLoggedIn(string username, List<User> usersConnected)
+        {
+            foreach (User user in usersConnected)
+            {
+                if (user.Username.Equals(username))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

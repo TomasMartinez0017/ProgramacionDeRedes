@@ -6,6 +6,7 @@ namespace Protocol
     {
         public int Header { get; set; }
         public int Command { get; set; }
+        public int Status { get; set; }
         public int DataLength { get; set; }
         public byte[] Data { get; set; }
 

@@ -24,8 +24,7 @@ namespace Client
         {
             _connectionsHandler.Connect();
             Console.WriteLine("Connection to Server Started");
-            User user = null;
-            
+
             while (_connectionsHandler.IsClientStateUp())
             {
                 int option = DeployMenu();
@@ -36,21 +35,14 @@ namespace Client
                 }
                 else
                 {
-                    Frame request = _requestHandler.BuildRequest(option, user);
+                    Frame request = _requestHandler.BuildRequest(option);
                     
                     Frame response = _connectionsHandler.SendRequestAndGetResponse(request);
-                    
+
                     string data = _responseHandler.ProcessResponse(response);
-                        
-                    if ((int)response.Command == (int)Command.SignUp)
-                    {
-                        UserRepository repository = UserRepository.GetInstance();
-                        user = repository.GetUser(data);
-                    }
-                    else
-                    {
-                        Console.WriteLine(data);
-                    }
+
+                    Console.WriteLine(data);
+
                 }
             }
         }
@@ -73,7 +65,7 @@ namespace Client
 
             option = Convert.ToInt32(Console.ReadLine());
 
-            if (option < 0 || option > 8)
+            if (option < 0 || option > 9)
             {
                 Console.WriteLine("Invalid option");
                 option = DeployMenu();

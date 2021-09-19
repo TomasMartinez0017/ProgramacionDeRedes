@@ -7,7 +7,7 @@ namespace Protocol
 {
     public class RequestHandler
     {
-        public Frame BuildRequest(int optionSelected, User user)
+        public Frame BuildRequest(int optionSelected)
         {
             Frame requestFrame = new Frame();
             requestFrame.Header =  (int) Header.Request;
@@ -22,6 +22,9 @@ namespace Protocol
                     break;
                 case Command.SignUp:
                     BuildSignUpRequest(requestFrame);
+                    break;
+                case Command.LogIn:
+                    BuildLogInRequest(requestFrame);
                     break;
             }
 
@@ -52,7 +55,16 @@ namespace Protocol
             byte[] userData = Encoding.UTF8.GetBytes(username);
             requestFrame.Data = userData;
             requestFrame.DataLength = userData.Length;
-
+        }
+        
+        private void BuildLogInRequest(Frame requestFrame)
+        {
+            Console.WriteLine("-----LOGIN-----");
+            Console.WriteLine("Enter username:");
+            string username = Console.ReadLine();
+            byte[] userData = Encoding.UTF8.GetBytes(username);
+            requestFrame.Data = userData;
+            requestFrame.DataLength = userData.Length;
         }
     }
 }

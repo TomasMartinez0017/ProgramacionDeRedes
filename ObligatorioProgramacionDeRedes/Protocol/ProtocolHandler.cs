@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
+using CustomExceptions;
 
 namespace Protocol
 {
@@ -17,6 +18,12 @@ namespace Protocol
             SendAndDivideData(BitConverter.GetBytes(frame.Header), 1);
             SendAndDivideData(BitConverter.GetBytes(frame.Command), 1);
             SendAndDivideData(BitConverter.GetBytes(frame.DataLength), 1);
+
+            if ((Header) frame.Header == Header.Response)
+            {
+                SendAndDivideData(BitConverter.GetBytes(frame.Status), 1);
+            }
+            
             SendAndDivideData(frame.Data, AmountOfSlotsNeeded(frame));
         }
         
@@ -55,6 +62,12 @@ namespace Protocol
             frame.Header = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.HeaderLength, 1));
             frame.Command = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.CommandLength, 1));
             frame.DataLength = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.DataLength, 1));
+            
+            if ((Header) frame.Header == Header.Response)
+            {
+                frame.Status = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.StatusLength, 1));
+            }
+            
             frame.Data = ReceiveDividedData(frame.DataLength, AmountOfSlotsNeeded(frame));
 
             return frame;
@@ -96,7 +109,7 @@ namespace Protocol
                 var received = stream.Read(data, dataReceived, length - dataReceived);
                 if (received == 0)
                 {
-                    throw new SocketException(); 
+                    throw new ClientExcpetion(MessageException.ClientDisconnectedException); 
                 }
                 dataReceived += received;
             }

@@ -50,7 +50,7 @@ namespace Server
             }
         }
 
-        private void AddConnection(Connection clientConnection)
+        private void AddConnection(Connection clientConnection) 
         {
             _connections.Add(clientConnection);
         }
