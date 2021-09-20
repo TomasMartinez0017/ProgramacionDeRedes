@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using Domain;
 using System.Text;
 using Microsoft.VisualBasic.CompilerServices;
@@ -25,6 +27,12 @@ namespace Protocol
                     break;
                 case Command.LogIn:
                     BuildLogInRequest(requestFrame);
+                    break;
+                case Command.UploadImage:
+                    BuildUploadImageRequest(requestFrame);
+                    break;
+                case Command.CreateReview:
+                    BuildRateGameRequest(requestFrame);
                     break;
             }
 
@@ -65,6 +73,56 @@ namespace Protocol
             byte[] userData = Encoding.UTF8.GetBytes(username);
             requestFrame.Data = userData;
             requestFrame.DataLength = userData.Length;
+        }
+
+        private void BuildUploadImageRequest(Frame requestFrame)
+        {
+            Console.WriteLine("Game name:");
+            string gameName = Console.ReadLine();
+            Console.WriteLine("Path were image is located:");
+            string path = Console.ReadLine();
+            
+            while (String.IsNullOrEmpty(path))
+            {
+                Console.WriteLine("ERROR: Please, enter a valid path");
+                path = Console.ReadLine();
+            }
+
+            while (!File.Exists(path))
+            {
+                Console.WriteLine("ERROR: Image file does not exist");
+                path = Console.ReadLine();
+            }
+            
+            string nameOfImage = new FileInfo(path).Name;
+            byte[] imageData = File.ReadAllBytes(path);
+            int lenghtOfDataWithoutImage = gameName.Length + nameOfImage.Length + path.Length + 2; //4 porque son cuatro '#'
+            
+            List<byte> imageRequestData = new List<byte>();
+            imageRequestData.AddRange(BitConverter.GetBytes(lenghtOfDataWithoutImage));
+            imageRequestData.AddRange(Encoding.UTF8.GetBytes($"{gameName}#"));
+            imageRequestData.AddRange(Encoding.UTF8.GetBytes($"{nameOfImage}#"));
+            imageRequestData.AddRange(Encoding.UTF8.GetBytes($"{path}"));
+            imageRequestData.AddRange(imageData);
+
+            byte[] data = imageRequestData.ToArray();
+            
+            requestFrame.Data = data;
+            requestFrame.DataLength = data.Length;
+        }
+
+        public void BuildRateGameRequest(Frame requestFrame)
+        {
+            Console.WriteLine("Game name:");
+            string gameName = Console.ReadLine();
+            Console.WriteLine("Score: (between 0 and 5)");
+            string score = Console.ReadLine();
+            Console.WriteLine("Review:");
+            string comment = Console.ReadLine();
+            
+            byte[] data = Encoding.UTF8.GetBytes($"{gameName}#{score}#{comment}");
+            requestFrame.Data = data;
+            requestFrame.DataLength = requestFrame.Data.Length;
         }
     }
 }

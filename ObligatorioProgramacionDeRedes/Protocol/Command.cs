@@ -4,13 +4,14 @@
     {
         ShowCatalog,
         BuyGame,
-        RateGame,
+        CreateReview,
         PublishGame,
         UpdateGame,
         DeleteGame,
         SearchGame,
+        UploadImage,
         SignUp,
         LogIn
-        
+
     }
 }

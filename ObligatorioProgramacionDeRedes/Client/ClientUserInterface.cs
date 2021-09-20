@@ -33,14 +33,12 @@ namespace Client
                 {
                     _connectionsHandler.ShutDown();
                 }
-                else
+                else 
                 {
                     Frame request = _requestHandler.BuildRequest(option);
-                    
                     Frame response = _connectionsHandler.SendRequestAndGetResponse(request);
 
                     string data = _responseHandler.ProcessResponse(response);
-
                     Console.WriteLine(data);
 
                 }
@@ -55,17 +53,18 @@ namespace Client
             Console.WriteLine("0 - Disconnect form server");
             Console.WriteLine("1 - Show catalog");
             Console.WriteLine("2 - Buy game");
-            Console.WriteLine("3 - Rate game");
+            Console.WriteLine("3 - Create review");
             Console.WriteLine("4 - Publish game");
             Console.WriteLine("5 - Update game");
             Console.WriteLine("6 - Delete game");
             Console.WriteLine("7 - Search game");
-            Console.WriteLine("8 - Sign up");
-            Console.WriteLine("9 - Log in");
+            Console.WriteLine("8 - Upload game cover");
+            Console.WriteLine("9 - Sign up");
+            Console.WriteLine("10 - Log in");
 
             option = Convert.ToInt32(Console.ReadLine());
 
-            if (option < 0 || option > 9)
+            if (option < 0 || option > 10)
             {
                 Console.WriteLine("Invalid option");
                 option = DeployMenu();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using CustomExceptions;
@@ -27,6 +28,12 @@ namespace Protocol
                 case Command.LogIn:
                     response = Encoding.UTF8.GetString(frame.Data);
                     break;
+                case Command.UploadImage:
+                    response = Encoding.UTF8.GetString(frame.Data);
+                    break;
+                case Command.CreateReview:
+                    response = Encoding.UTF8.GetString(frame.Data);
+                    break;
             }
 
             return response;
@@ -49,6 +56,12 @@ namespace Protocol
                     break;
                 case Command.LogIn:
                     response = CreateLogInResponse(frame, usersConnected);
+                    break;
+                case Command.UploadImage:
+                    response = CreateUploadImageResponse(frame);
+                    break;
+                case Command.CreateReview:
+                    response = CreateReviewResponse(frame);
                     break;
             }
 
@@ -244,7 +257,6 @@ namespace Protocol
             }
             if(repository.UserExists(username))
             {
-                repository.UserExists(username);
                 response.Data = frame.Data;
                 response.DataLength = response.Data.Length;
             }
@@ -269,6 +281,118 @@ namespace Protocol
             }
 
             return false;
+        }
+
+        private Frame CreateUploadImageResponse(Frame frame)
+        {
+            Frame response = new Frame();
+            response.Command = (int) Command.UploadImage;
+            response.Header = (int) Header.Response;
+            response.Status = (int) Status.Ok;
+            
+            byte[] data = frame.Data;
+            
+            int imageInformationLength = GetImageInformationLength(data);
+
+            byte[] image = GetImage(data, imageInformationLength);
+            
+            byte[] imageInformation = new byte[imageInformationLength];
+            
+            Array.Copy(data, 4, imageInformation, 0, imageInformationLength);
+
+            string[] imageInformationToString = Encoding.UTF8.GetString(imageInformation).Split('#');
+            string gameName = imageInformationToString[0];
+            string imageName = imageInformationToString[1];
+            string path = imageInformationToString[2];
+            
+            GameRepository repository = GameRepository.GetInstance();
+            Game gameToUploadImage = repository.GetGame(gameName);
+
+            if (gameToUploadImage == null)
+            {
+                response.Status = (int) Status.Error;
+                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found.");
+                response.DataLength = response.Data.Length;
+            }
+            else
+            {
+                gameToUploadImage.Image = Directory.GetCurrentDirectory() + "\\" + imageName;
+            
+                File.WriteAllBytes(Directory.GetCurrentDirectory() + "\\" + imageName, image);
+
+                response.Data = Encoding.UTF8.GetBytes("Image uploaded.");
+                response.DataLength = response.Data.Length;
+            }
+            
+            return response;
+        }
+
+        private static byte[] GetImage(byte[] data, int imageInformationLength)
+        {
+            int imageLength = data.Length - (imageInformationLength + 4);
+            byte[] image = new byte[imageLength];
+            int positionWhereImageStarts = imageInformationLength + 4;
+            Array.Copy(data, positionWhereImageStarts, image, 0, imageLength);
+            return image;
+        }
+
+        private static int GetImageInformationLength(byte[] data)
+        {
+            byte[] imageDataLength = new byte[4];
+            Array.Copy(data, imageDataLength, 4);
+            int dataLength = BitConverter.ToInt32(imageDataLength);
+            return dataLength;
+        }
+
+        private Frame CreateReviewResponse(Frame frame)
+        {
+            Frame response = new Frame();
+            response.Command = (int) Command.CreateReview;
+            response.Header = (int) Header.Response;
+            response.Status = (int) Status.Ok;
+            
+            string[] attributes = Encoding.UTF8.GetString(frame.Data).Split("#");
+            string gameName = attributes[0];
+            string score = attributes[1];
+            string comment = attributes[2];
+
+            string message = null;
+
+            Review review = new Review();
+            try
+            {
+                review.Comment = comment;
+                review.Score = score;
+                review.ValidReview();
+                GameRepository gameRepository = GameRepository.GetInstance();
+                Game game = gameRepository.GetGame(gameName);
+                
+                if (game == null)
+                {
+                    message = "ERROR: Game not found.";
+                    response.Status = (int) Status.Error;
+                }
+                else
+                {
+                    review.Game = game;
+                    ReviewRepository reviewRepository = ReviewRepository.GetInstance();
+                    reviewRepository.AddReview(review);
+                    message = "Review created successfully.";
+                }
+
+                response.Data = Encoding.UTF8.GetBytes(message);
+                response.DataLength = response.Data.Length;
+                
+                return response;
+            }
+            catch (InvalidReviewException e)
+            {
+                response.Data = Encoding.UTF8.GetBytes(e.Message);
+                response.DataLength = response.Data.Length;
+                response.Status = (int) Status.Error;
+                return response;
+            }
+            
         }
     }
 }

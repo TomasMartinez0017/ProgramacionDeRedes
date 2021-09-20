@@ -62,5 +62,21 @@ namespace DataAccess
                 return copyOfGames;
             }
         }
+
+        public Game GetGame(string gameName)
+        {
+            lock (_gamesLocker)
+            {
+                foreach (Game game in _games)
+                {
+                    if (game.Title.Equals(gameName))
+                    {
+                        return game;
+                    }
+                }
+
+                return null;
+            }
+        }
     }
 }
