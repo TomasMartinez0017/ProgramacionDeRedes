@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Domain;
 using DataAccess;
 
@@ -53,6 +54,20 @@ namespace Server
             lock (_activeUsersLocker)
             {
                 this._activeUsers.Clear();
+            }
+        }
+
+        public void DisconnectUser(User userToDisconnect)
+        {
+            lock (_activeUsersLocker)
+            {
+                for (int i = 0; i < _activeUsers.Count; i++)  
+                {
+                    if (_activeUsers.ElementAt(i).Username.Equals(userToDisconnect.Username))
+                    {
+                        _activeUsers.Remove(_activeUsers.ElementAt(i));
+                    }
+                }
             }
         }
     }

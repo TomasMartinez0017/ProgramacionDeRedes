@@ -13,6 +13,19 @@ namespace Domain
         {
             this.Games = new List<Game>();
         }
+
+        public bool HasGame(string gameName)
+        {
+            foreach (Game game in Games)
+            {
+                if (game.Title.Equals(gameName))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
         
     }
 }

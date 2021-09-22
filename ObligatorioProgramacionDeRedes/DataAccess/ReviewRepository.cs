@@ -37,5 +37,20 @@ namespace DataAccess
                 this._reviews.Add(review);    
             }
         }
+
+        public List<Review> GetReviews(Game game)
+        {
+            List<Review> listToReturn = new List<Review>();
+            foreach (Review review in _reviews)
+            {
+                if (review.Game.Title.Equals(game.Title))
+                {
+                    listToReturn.Add(review);
+                }
+            }
+
+            return listToReturn;
+
+        }
     }
 }

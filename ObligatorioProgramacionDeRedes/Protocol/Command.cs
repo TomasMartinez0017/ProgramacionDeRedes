@@ -9,6 +9,7 @@
         UpdateGame,
         DeleteGame,
         SearchGame,
+        ShowGameReviews,
         UploadImage,
         SignUp,
         LogIn

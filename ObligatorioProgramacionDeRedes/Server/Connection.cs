@@ -41,7 +41,7 @@ namespace Server
             _tcpClient.Close();
             _state = ConnectionState.Down;
             ActiveUserRepository repository = ActiveUserRepository.GetInstance();
-            repository.DisconnectAlUsers();
+            repository.DisconnectUser(_userConnected);
             
         }
 
@@ -53,7 +53,7 @@ namespace Server
                 List<User> usersConnected = activeUserRepository.GetUsers();
             
                 Frame request = _protocol.Receive();
-                Frame response = _responseHandler.GetResponse(request, usersConnected);
+                Frame response = _responseHandler.GetResponse(request, usersConnected, _userConnected);
 
                 ManageSignUp(request, response, activeUserRepository);
 

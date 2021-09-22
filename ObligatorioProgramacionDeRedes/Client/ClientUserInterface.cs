@@ -58,13 +58,14 @@ namespace Client
             Console.WriteLine("5 - Update game");
             Console.WriteLine("6 - Delete game");
             Console.WriteLine("7 - Search game");
-            Console.WriteLine("8 - Upload game cover");
-            Console.WriteLine("9 - Sign up");
-            Console.WriteLine("10 - Log in");
+            Console.WriteLine("8 - Show game reviews");
+            Console.WriteLine("9 - Upload game cover");
+            Console.WriteLine("10 - Sign up");
+            Console.WriteLine("11 - Log in");
 
             option = Convert.ToInt32(Console.ReadLine());
 
-            if (option < 0 || option > 10)
+            if (option < 0 || option > 11)
             {
                 Console.WriteLine("Invalid option");
                 option = DeployMenu();

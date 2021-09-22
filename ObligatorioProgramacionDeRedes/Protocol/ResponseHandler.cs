@@ -34,12 +34,18 @@ namespace Protocol
                 case Command.CreateReview:
                     response = Encoding.UTF8.GetString(frame.Data);
                     break;
+                case Command.BuyGame:
+                    response = Encoding.UTF8.GetString(frame.Data);
+                    break;
+                case Command.ShowGameReviews:
+                    response = ProcessShowGameReviews(frame.Data);
+                    break;
             }
 
             return response;
         }
 
-        public Frame GetResponse(Frame frame, List<User> usersConnected)
+        public Frame GetResponse(Frame frame, List<User> usersConnected, User _userConnected)
         {
             Frame response = null;
 
@@ -61,7 +67,13 @@ namespace Protocol
                     response = CreateUploadImageResponse(frame);
                     break;
                 case Command.CreateReview:
-                    response = CreateReviewResponse(frame);
+                    response = CreateReviewResponse(frame, _userConnected);
+                    break;
+                case Command.BuyGame:
+                    response = CreateBuyGameResponse(frame, _userConnected);
+                    break;
+                case Command.ShowGameReviews:
+                    response = CreateShowGameReviewsResponse(frame);
                     break;
             }
 
@@ -113,7 +125,8 @@ namespace Protocol
             string[] attributes = Encoding.UTF8.GetString(gameFrame.Data).Split("#");
             gameExtracted.Title = attributes[0];
             gameExtracted.Genre = attributes[1];
-            gameExtracted.ScoreAverage = attributes[2];
+            string rating = attributes[2];
+            gameExtracted.SetRating(rating);
             gameExtracted.Description = attributes[3];
             return gameExtracted;
         }
@@ -142,7 +155,7 @@ namespace Protocol
             foreach (Game game in games)
             {
                 byte[] gameData =
-                    Encoding.UTF8.GetBytes($"{game.Title}#{game.Genre}#{game.ScoreAverage}#{game.Description}#");
+                    Encoding.UTF8.GetBytes($"{game.Title}#{game.Genre}#{game.Rating}#{game.Description}#");
                 serializedGames.Add(gameData);
             }
 
@@ -169,7 +182,7 @@ namespace Protocol
             return dataToReturn.ToArray();
         }
 
-        string ProcessShowCatalogResponse(byte[] data)
+        private string ProcessShowCatalogResponse(byte[] data)
         {
             string[] games = Encoding.UTF8.GetString(data).Split('/');
             string joinedGames = string.Join("", games);
@@ -178,7 +191,7 @@ namespace Protocol
             int gameCounter = 0;
             string catalogResponse = "";
 
-            for (int i = 0; i < gamesSeparated.Length; i++)
+            for (int i = 0; i < gamesSeparated.Length - 1; i++)
             {
                 switch (gameCounter)
                 {
@@ -193,8 +206,8 @@ namespace Protocol
                         gameCounter++;
                         break;
                     case 2:
-                        string gameScore = gamesSeparated[i];
-                        catalogResponse = catalogResponse + "Score: " + gameScore + "\n";
+                        string gameRating = gamesSeparated[i];
+                        catalogResponse = catalogResponse + "Rating: " + gameRating + "\n";
                         gameCounter++;
                         break;
                     case 3:
@@ -207,6 +220,45 @@ namespace Protocol
             
             return catalogResponse;
 
+        }
+
+        private string ProcessShowGameReviews(byte[] data)
+        {
+            string[] reviews = Encoding.UTF8.GetString(data).Split('/');
+            string joinedReviews = string.Join("", reviews);
+            string[] reviewsSeparated = joinedReviews.Split('#');
+
+            int reviewCounter = 0;
+            string reviewsResponse = "";
+            int scoreTotal = 0;
+            
+            for (int i = 0; i < reviewsSeparated.Length - 1; i++)
+            {
+                switch (reviewCounter)
+                {
+                    case 0:
+                        string reviewUser = reviewsSeparated[i];
+                        reviewsResponse = reviewsResponse + "User: " + reviewUser + "\n";
+                        reviewCounter++;
+                        break;
+                    case 1:
+                        string reviewScore = reviewsSeparated[i];
+                        reviewsResponse = reviewsResponse +  "Score: " + reviewScore + "\n";
+                        reviewCounter++;
+                        scoreTotal += Convert.ToInt32(reviewScore); 
+                        break;
+                    case 2:
+                        string reviewComment = reviewsSeparated[i];
+                        reviewsResponse = reviewsResponse + "Comment: " + reviewComment + "\n";
+                        reviewCounter = 0;
+                        break;
+                }
+            }
+
+            int scoreAverage = scoreTotal / reviews.Length;
+            reviewsResponse = reviewsResponse + scoreAverage.ToString() + "\n";
+            
+            return reviewsResponse;
         }
 
         private Frame CreateSignUpResponse(Frame frame)
@@ -327,7 +379,7 @@ namespace Protocol
             return response;
         }
 
-        private static byte[] GetImage(byte[] data, int imageInformationLength)
+        private byte[] GetImage(byte[] data, int imageInformationLength)
         {
             int imageLength = data.Length - (imageInformationLength + 4);
             byte[] image = new byte[imageLength];
@@ -336,7 +388,7 @@ namespace Protocol
             return image;
         }
 
-        private static int GetImageInformationLength(byte[] data)
+        private int GetImageInformationLength(byte[] data)
         {
             byte[] imageDataLength = new byte[4];
             Array.Copy(data, imageDataLength, 4);
@@ -344,7 +396,7 @@ namespace Protocol
             return dataLength;
         }
 
-        private Frame CreateReviewResponse(Frame frame)
+        private Frame CreateReviewResponse(Frame frame, User user)
         {
             Frame response = new Frame();
             response.Command = (int) Command.CreateReview;
@@ -359,40 +411,162 @@ namespace Protocol
             string message = null;
 
             Review review = new Review();
-            try
+            
+            if (!String.IsNullOrEmpty(user.Username))
             {
-                review.Comment = comment;
-                review.Score = score;
-                review.ValidReview();
-                GameRepository gameRepository = GameRepository.GetInstance();
-                Game game = gameRepository.GetGame(gameName);
+                try
+                {
+                    review.Comment = comment;
+                    review.Score = score;
+                    review.User = user;
+                    review.ValidReview();
+                    GameRepository gameRepository = GameRepository.GetInstance();
+                    Game game = gameRepository.GetGame(gameName);
                 
-                if (game == null)
-                {
-                    message = "ERROR: Game not found.";
-                    response.Status = (int) Status.Error;
-                }
-                else
-                {
-                    review.Game = game;
-                    ReviewRepository reviewRepository = ReviewRepository.GetInstance();
-                    reviewRepository.AddReview(review);
-                    message = "Review created successfully.";
-                }
+                    if (game == null)
+                    {
+                        message = "ERROR: Game not found.";
+                        response.Status = (int) Status.Error;
+                    }
+                    else
+                    {
+                        review.Game = game;
+                        ReviewRepository reviewRepository = ReviewRepository.GetInstance();
+                        reviewRepository.AddReview(review);
+                        message = "Review created successfully.";
+                    }
 
-                response.Data = Encoding.UTF8.GetBytes(message);
-                response.DataLength = response.Data.Length;
+                    response.Data = Encoding.UTF8.GetBytes(message);
+                    response.DataLength = response.Data.Length;
                 
-                return response;
+                    return response;
+                }
+                catch (InvalidReviewException e)
+                {
+                    response.Data = Encoding.UTF8.GetBytes(e.Message);
+                    response.DataLength = response.Data.Length;
+                    response.Status = (int) Status.Error;
+                    return response;
+                }
             }
-            catch (InvalidReviewException e)
+            else
             {
-                response.Data = Encoding.UTF8.GetBytes(e.Message);
+                message = "ERROR: User must login before posting a review.";
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
                 response.Status = (int) Status.Error;
                 return response;
             }
             
+            
+        }
+
+        private Frame CreateBuyGameResponse(Frame frame, User user)
+        {
+            Frame response = new Frame();
+            response.Command = (int) Command.CreateReview;
+            response.Header = (int) Header.Response;
+            response.Status = (int) Status.Ok;
+            string message = null;
+            
+            if (!String.IsNullOrEmpty(user.Username))
+            {
+               UserRepository userRepository = UserRepository.GetInstance();
+               GameRepository gameRepository = GameRepository.GetInstance();
+               
+               User userToAddGame = userRepository.GetUser(user.Username);
+               string gameName = Encoding.UTF8.GetString(frame.Data);
+               Game gameThatUserWants = gameRepository.GetGame(gameName);
+               if (gameThatUserWants != null)
+               {
+                   if (!userToAddGame.HasGame(gameThatUserWants.Title))
+                   {
+                       userToAddGame.Games.Add(gameThatUserWants);
+                       message = "Game added to your library";
+                       frame.Status = (int) Status.Error;
+                   }
+                   else
+                   {
+                       message = $"ERROR: User already has this game: {gameName}.";
+                       frame.Status = (int) Status.Error;
+                   }
+               }
+               else
+               {
+                   message = "ERROR: Game not found.";
+                   frame.Status = (int) Status.Error;
+               }
+                
+               response.Data = Encoding.UTF8.GetBytes(message);
+               response.DataLength = response.Data.Length;
+               return response;
+
+            }
+            else
+            {
+                message = "ERROR: User must login before buying a game.";
+                response.Data = Encoding.UTF8.GetBytes(message);
+                response.DataLength = response.Data.Length;
+                return response;
+            }
+        }
+
+        private Frame CreateShowGameReviewsResponse(Frame frame)
+        {
+            Frame response = new Frame();
+            response.Command = (int) Command.ShowGameReviews;
+            response.Header = (int) Header.Response;
+            response.Status = (int) Status.Ok;
+
+            string gameName = Encoding.UTF8.GetString(frame.Data);
+            
+            GameRepository gameRepository = GameRepository.GetInstance();
+            ReviewRepository reviewRepository = ReviewRepository.GetInstance();
+
+            Game gameToShow = gameRepository.GetGame(gameName);
+            List<Review> reviewsOfGame = reviewRepository.GetReviews(gameToShow);
+            List<byte[]> serializedReviews = SerializeReviews(reviewsOfGame);
+            
+            byte[] serializedList = SerializeListOfReviews(serializedReviews);
+
+            response.Data = serializedList;
+            response.DataLength = response.Data.Length;
+            response.Status = (int) Status.Ok;
+            return response;
+
+        }
+        
+        private List<byte[]> SerializeReviews(List<Review> reviews)
+        {
+            List<byte[]> serializedReviews = new List<byte[]>();
+            foreach (Review review in reviews)
+            {
+                byte[] data =
+                    Encoding.UTF8.GetBytes($"{review.User.Username}#{review.Score}#{review.Comment}#");
+                serializedReviews.Add(data);
+            }
+
+            return serializedReviews;
+        }
+        
+        private byte[] SerializeListOfReviews(List<byte[]> reviewsSerialized)
+        {
+            List<byte> dataToReturn = new List<byte>();
+            
+            byte separator = 47;
+            
+            for (int i = 0; i < reviewsSerialized.Count; i++)
+            {
+                byte[] review = reviewsSerialized.ElementAt(i);
+                dataToReturn.AddRange(review);
+
+                if (i != reviewsSerialized.Count() - 1)
+                {
+                    dataToReturn.Add(separator);
+                }
+            }
+
+            return dataToReturn.ToArray();
         }
     }
 }

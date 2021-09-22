@@ -9,6 +9,8 @@ namespace Domain
         public string Comment { get; set; }
         public string Score { get; set; }
         public Game Game { get; set; }
+        
+        public User User { get; set; }
 
         public void ValidReview()
         {
