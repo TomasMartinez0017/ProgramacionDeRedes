@@ -78,5 +78,31 @@ namespace DataAccess
                 return null;
             }
         }
+
+        public void DeleteGame(string gameName)
+        {
+            lock (_gamesLocker)
+            {
+                for(int i=0; i<_games.Count; i++)
+                {
+                    if (_games.ElementAt(i).Title.Equals(gameName))
+                    {
+                        _games.Remove(_games.ElementAt(i));
+                    }
+                }
+            }
+        }
+
+        public void UpdateGame(string gameNameSearched, Game gameUpdated)
+        {
+            lock (_gamesLocker)
+            {
+                Game gameToUpdate = this.GetGame(gameNameSearched);
+                if(!string.IsNullOrEmpty(gameUpdated.Title)) gameToUpdate.Title = gameUpdated.Title;
+                if(!string.IsNullOrEmpty(gameUpdated.Genre)) gameToUpdate.Genre = gameUpdated.Genre;
+                if(!string.IsNullOrEmpty(gameUpdated.Rating)) gameToUpdate.Rating = gameUpdated.Rating;
+                if (!string.IsNullOrEmpty(gameUpdated.Description)) gameToUpdate.Description = gameUpdated.Description;
+            }
+        }
     }
 }

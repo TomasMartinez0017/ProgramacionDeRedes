@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CustomExceptions;
 using Domain;
 namespace DataAccess
@@ -68,6 +69,24 @@ namespace DataAccess
                 }
                 
                 return false;
+            }
+        }
+
+        public void DeleteBoughtGame(string gameName)
+        {
+            lock (_usersLocker)
+            {
+                foreach (User user in _users)
+                {
+                    List<Game> games = user.Games;
+                    for (int i = 0; i < games.Count; i++)
+                    {
+                        if (games.ElementAt(i).Title.Equals(gameName))
+                        {
+                            games.Remove(games.ElementAt(i));
+                        }
+                    }
+                }
             }
         }
     }

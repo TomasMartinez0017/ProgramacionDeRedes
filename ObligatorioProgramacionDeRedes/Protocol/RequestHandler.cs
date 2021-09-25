@@ -39,8 +39,18 @@ namespace Protocol
                     BuildBuyGameRequest(requestFrame);
                     break;
                 case Command.ShowGameReviews:
-                    BuildShowGameReviesRequest(requestFrame);
+                    BuildShowGameReviewsRequest(requestFrame);
                     break;
+                case Command.DeleteGame:
+                    BuildDeleteGameRequest(requestFrame);
+                    break;
+                case Command.UpdateGame:
+                    BuildUpdateGameRequest(requestFrame);
+                    break;
+                case Command.DownLoadImage:
+                    BuildDownloadGameImage(requestFrame);
+                    break;
+                    
             }
 
             return requestFrame;
@@ -52,7 +62,7 @@ namespace Protocol
             string gameName = Console.ReadLine();
             Console.WriteLine("Genre:");
             string gameGenre = Console.ReadLine();
-            string rating = GetRatingFromConsole();
+            string rating = GetRatingFromConsole((int)Command.PublishGame);
             Console.WriteLine("Description:");
             string gameDescription = Console.ReadLine();
             byte[] gameData = Encoding.UTF8.GetBytes($"{gameName}#{gameGenre}#{rating}#{gameDescription}");
@@ -60,7 +70,7 @@ namespace Protocol
             requestFrame.DataLength = gameData.Length;
         }
 
-        private string GetRatingFromConsole()
+        private string GetRatingFromConsole(int requestCommand)
         {
             Console.WriteLine("ESRB:");
             Console.WriteLine("1 - Everyone");
@@ -69,13 +79,33 @@ namespace Protocol
             Console.WriteLine("4 - Adults Only");
             string rating = Console.ReadLine();
             
+            if (requestCommand == (int) Command.UpdateGame)
+            {
+                if (string.IsNullOrEmpty(rating))
+                {
+                    return rating;
+                }
+                else
+                {
+                    ValidateRating(rating);
+                    return rating;
+                }
+            }
+            else
+            {
+                ValidateRating(rating);
+                return rating;  
+            }
+            
+        }
+
+        private void ValidateRating(string rating)
+        {
             while (!RatingIsNumeric(rating) || Convert.ToInt32(rating) < 0 || Convert.ToInt32(rating) > 4)
             {
                 Console.WriteLine("ERROR: Please enter a valid rating");
                 rating = Console.ReadLine();
             }
-
-            return rating;
         }
 
         private bool RatingIsNumeric(string rating)
@@ -168,9 +198,46 @@ namespace Protocol
             requestFrame.DataLength = requestFrame.Data.Length;
         }
 
-        private void BuildShowGameReviesRequest(Frame requestFrame)
+        private void BuildShowGameReviewsRequest(Frame requestFrame)
         {
             Console.WriteLine("Game name:");
+            string gameName = Console.ReadLine();
+            byte[] data = Encoding.UTF8.GetBytes($"{gameName}");
+            requestFrame.Data = data;
+            requestFrame.DataLength = requestFrame.Data.Length;
+        }
+
+        private void BuildDeleteGameRequest(Frame requestFrame)
+        {
+            Console.WriteLine("Game name:");
+            string gameName = Console.ReadLine();
+            byte[] data = Encoding.UTF8.GetBytes($"{gameName}");
+            requestFrame.Data = data;
+            requestFrame.DataLength = requestFrame.Data.Length;
+        }
+
+        private void BuildUpdateGameRequest(Frame requestFrame)
+        {
+            Console.WriteLine("Enter game name you want to update:");
+            string gameName = Console.ReadLine();
+            Console.WriteLine("Leave the field empty if you do not want to update attribute");
+            Console.WriteLine("New game title:");
+            string newGameName = Console.ReadLine();
+            Console.WriteLine("New game genre:");
+            string newGameGenre = Console.ReadLine();
+            Console.WriteLine("New game rating:");
+            string newGameRating = GetRatingFromConsole((int)Command.UpdateGame);
+            Console.WriteLine("New game description");
+            string newGameDescription = Console.ReadLine();
+            
+            byte[] gameData = Encoding.UTF8.GetBytes($"{gameName}#{newGameName}#{newGameGenre}#{newGameRating}#{newGameDescription}");
+            requestFrame.Data = gameData;
+            requestFrame.DataLength = gameData.Length;
+        }
+
+        private void BuildDownloadGameImage(Frame requestFrame)
+        {
+            Console.WriteLine("Enter game name:");
             string gameName = Console.ReadLine();
             byte[] data = Encoding.UTF8.GetBytes($"{gameName}");
             requestFrame.Data = data;

@@ -11,6 +11,7 @@
         SearchGame,
         ShowGameReviews,
         UploadImage,
+        DownLoadImage,
         SignUp,
         LogIn
 

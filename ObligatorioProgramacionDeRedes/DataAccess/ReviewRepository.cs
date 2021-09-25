@@ -40,17 +40,34 @@ namespace DataAccess
 
         public List<Review> GetReviews(Game game)
         {
-            List<Review> listToReturn = new List<Review>();
-            foreach (Review review in _reviews)
+            lock (_instanceLocker)
             {
-                if (review.Game.Title.Equals(game.Title))
+                List<Review> listToReturn = new List<Review>();
+                foreach (Review review in _reviews)
                 {
-                    listToReturn.Add(review);
+                    if (review.Game.Title.Equals(game.Title))
+                    {
+                        listToReturn.Add(review);
+                    }
+                }
+                return listToReturn;
+            }
+            
+        }
+
+        public void DeleteReview(string gameName)
+        {
+            lock (_instanceLocker)
+            {
+                for (int i = 0; i < _reviews.Count; i++)
+                {
+                    if (_reviews.ElementAt(i).Game.Title.Equals(gameName))
+                    {
+                        _reviews.Remove(_reviews.ElementAt(i));
+                    }
                 }
             }
-
-            return listToReturn;
-
+            
         }
     }
 }

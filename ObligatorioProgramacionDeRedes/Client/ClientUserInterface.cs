@@ -60,12 +60,13 @@ namespace Client
             Console.WriteLine("7 - Search game");
             Console.WriteLine("8 - Show game reviews");
             Console.WriteLine("9 - Upload game cover");
-            Console.WriteLine("10 - Sign up");
-            Console.WriteLine("11 - Log in");
+            Console.WriteLine("10 - Download game cover");
+            Console.WriteLine("11 - Sign up");
+            Console.WriteLine("12 - Log in");
 
             option = Convert.ToInt32(Console.ReadLine());
 
-            if (option < 0 || option > 11)
+            if (option < 0 || option > 12)
             {
                 Console.WriteLine("Invalid option");
                 option = DeployMenu();

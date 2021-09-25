@@ -40,6 +40,15 @@ namespace Protocol
                 case Command.ShowGameReviews:
                     response = ProcessShowGameReviews(frame.Data);
                     break;
+                case Command.DeleteGame:
+                    response = Encoding.UTF8.GetString(frame.Data);
+                    break;
+                case Command.UpdateGame:
+                    response=Encoding.UTF8.GetString(frame.Data);
+                    break;
+                case Command.DownLoadImage:
+                    response = ProcessDownloadImageResponse(frame.Data);
+                    break;
             }
 
             return response;
@@ -74,6 +83,15 @@ namespace Protocol
                     break;
                 case Command.ShowGameReviews:
                     response = CreateShowGameReviewsResponse(frame);
+                    break;
+                case Command.DeleteGame:
+                    response = CreateDeleteGameResponse(frame);
+                    break;
+                case Command.UpdateGame:
+                    response = CreateUpdateGameResponse(frame);
+                    break;
+                case Command.DownLoadImage:
+                    response = CreateDownloadGameCoverResponse(frame);
                     break;
             }
 
@@ -256,7 +274,7 @@ namespace Protocol
             }
 
             int scoreAverage = scoreTotal / reviews.Length;
-            reviewsResponse = reviewsResponse + scoreAverage.ToString() + "\n";
+            reviewsResponse = reviewsResponse + " Score Average: " + scoreAverage + "\n";
             
             return reviewsResponse;
         }
@@ -524,14 +542,24 @@ namespace Protocol
             ReviewRepository reviewRepository = ReviewRepository.GetInstance();
 
             Game gameToShow = gameRepository.GetGame(gameName);
-            List<Review> reviewsOfGame = reviewRepository.GetReviews(gameToShow);
-            List<byte[]> serializedReviews = SerializeReviews(reviewsOfGame);
+            if (gameToShow != null)
+            {
+                List<Review> reviewsOfGame = reviewRepository.GetReviews(gameToShow);
+                List<byte[]> serializedReviews = SerializeReviews(reviewsOfGame);
             
-            byte[] serializedList = SerializeListOfReviews(serializedReviews);
+                byte[] serializedList = SerializeListOfReviews(serializedReviews);
 
-            response.Data = serializedList;
-            response.DataLength = response.Data.Length;
-            response.Status = (int) Status.Ok;
+                response.Data = serializedList;
+                response.DataLength = response.Data.Length;
+                response.Status = (int) Status.Ok; 
+            }
+            else
+            {
+                response.Data = Encoding.UTF8.GetBytes("Game not found");
+                response.DataLength = response.Data.Length;
+                response.Status = (int) Status.Error;
+            }
+            
             return response;
 
         }
@@ -567,6 +595,119 @@ namespace Protocol
             }
 
             return dataToReturn.ToArray();
+        }
+
+        private Frame CreateDeleteGameResponse(Frame frame)
+        {
+            Frame response = new Frame();
+            response.Command = (int) Command.DeleteGame;
+            response.Header = (int) Header.Response;
+            response.Status = (int) Status.Ok;
+            string message = null;
+
+            string gameName = Encoding.UTF8.GetString(frame.Data);
+            
+            GameRepository gameRepository = GameRepository.GetInstance();
+            UserRepository userRepository = UserRepository.GetInstance();
+            ReviewRepository reviewRepository = ReviewRepository.GetInstance();
+            Game gameSearched = new Game();
+            gameSearched.Title = gameName;
+            if (gameRepository.GameExists(gameSearched))
+            {
+                gameRepository.DeleteGame(gameName);
+                userRepository.DeleteBoughtGame(gameName);
+                reviewRepository.DeleteReview(gameName);
+                
+                message = "Game deleted succesfully";
+            }
+            else
+            {
+                message = "Could not find game";
+            }
+
+            response.Data = Encoding.UTF8.GetBytes(message);
+            response.DataLength = response.Data.Length;
+            return response;
+        }
+        
+        private Frame CreateUpdateGameResponse(Frame frame)
+        {
+            Frame response = new Frame();
+            response.Command = (int) Command.UpdateGame;
+            response.Header = (int) Header.Response;
+            response.Status = (int) Status.Ok;
+            string message = null;
+            string[] attributes = Encoding.UTF8.GetString(frame.Data).Split("#");
+
+            string gameNameSearched = attributes[0];
+            Game gameSearched = new Game();
+            gameSearched.Title = gameNameSearched;
+            
+            GameRepository gameRepository = GameRepository.GetInstance();
+            Game gameUpdated = new Game();
+            gameUpdated.Title = attributes[1];
+            gameUpdated.Genre = attributes[2];
+            gameUpdated.Rating = attributes[3];
+            gameUpdated.Description = attributes[4];
+            
+            if (gameRepository.GameExists(gameSearched))
+            {
+                gameRepository.UpdateGame(gameNameSearched, gameUpdated);
+                message = "Game updated succesfully";
+            }
+            else
+            {
+                message = "Could not find game";
+            }
+
+            response.Data = Encoding.UTF8.GetBytes(message);
+            response.DataLength = response.Data.Length;
+            return response;
+        }
+
+        private Frame CreateDownloadGameCoverResponse(Frame frame)
+        {
+            Frame response = new Frame();
+            response.Command = (int) Command.DownLoadImage;
+            response.Header = (int) Header.Response;
+            response.Status = (int) Status.Ok;
+            string gameName = Encoding.UTF8.GetString(frame.Data);
+            
+            GameRepository gameRepository=GameRepository.GetInstance();
+            Game gameSearched = gameRepository.GetGame(gameName);
+            if (gameSearched != null)
+            {
+                string nameOfImage = new FileInfo(gameSearched.Image).Name;
+                byte[] imageData = File.ReadAllBytes(gameSearched.Image);
+                List<byte> imageResponseData = new List<byte>();
+                int lengthOfImageName = nameOfImage.Length;
+                
+                imageResponseData.AddRange(BitConverter.GetBytes(lengthOfImageName));
+                imageResponseData.AddRange(Encoding.UTF8.GetBytes($"{nameOfImage}"));
+                imageResponseData.AddRange(imageData);
+                
+                response.Data = imageResponseData.ToArray();
+                response.DataLength = response.Data.Length;
+            }
+            else
+            {
+                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found");
+                response.DataLength = response.Data.Length;
+            }
+            
+            return response;
+        }
+
+        private string ProcessDownloadImageResponse(byte[] data)
+        {
+            int imageInformationLength = GetImageInformationLength(data);
+            byte[] image = GetImage(data, imageInformationLength);
+            byte[] imageInformation = new byte[imageInformationLength];
+            Array.Copy(data, 4, imageInformation, 0, imageInformationLength);
+            string imageName = Encoding.UTF8.GetString(imageInformation);
+            File.WriteAllBytes("C:\\Users\\rafra\\Desktop"+"\\"+imageName,image);
+            string response = "Image downloaded succesfully";
+            return response;
         }
     }
 }
