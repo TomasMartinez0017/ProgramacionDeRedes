@@ -5,7 +5,7 @@ using CustomExceptions;
 using Domain;
 namespace DataAccess
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository
     {
         private readonly List<User> _users;
         private object _usersLocker;

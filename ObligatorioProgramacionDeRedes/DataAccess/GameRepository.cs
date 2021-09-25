@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Domain;
 namespace DataAccess
 {
-    public class GameRepository : IGameRepository
+    public class GameRepository
     {
         private readonly List<Game> _games;
         private object _gamesLocker;
