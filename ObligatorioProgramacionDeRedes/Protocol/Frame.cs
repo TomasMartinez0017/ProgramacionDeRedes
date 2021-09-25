@@ -15,5 +15,12 @@ namespace Protocol
             DataLength = 0;
             Data = new byte[0];
         }
+
+        public void CreateFrame(int header, int command)
+        {
+            this.Header = header;
+            this.Command = command;
+            this.Status = (int) FrameStatus.Ok;
+        }
     }
 }

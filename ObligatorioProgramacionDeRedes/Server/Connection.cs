@@ -75,7 +75,7 @@ namespace Server
 
         private void ManageLogIn(Frame request, Frame response, ActiveUserRepository activeUserRepository)
         {
-            if ((Command) request.Command == Command.LogIn && (Status) response.Status == Status.Ok)
+            if ((Command) request.Command == Command.LogIn && (FrameStatus) response.Status == FrameStatus.Ok)
             {
                 UserRepository userRepository = UserRepository.GetInstance();
                 _userConnected = userRepository.GetUser(Encoding.UTF8.GetString(response.Data));
@@ -87,7 +87,7 @@ namespace Server
 
         private void ManageSignUp(Frame request, Frame response, ActiveUserRepository activeUserRepository)
         {
-            if ((Command) request.Command == Command.SignUp && (Status) response.Status == Status.Ok)
+            if ((Command) request.Command == Command.SignUp && (FrameStatus) response.Status == FrameStatus.Ok)
             {
                 _userConnected.Username = Encoding.UTF8.GetString(response.Data);
                 activeUserRepository.AddUser(_userConnected);

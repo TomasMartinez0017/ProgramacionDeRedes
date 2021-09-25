@@ -13,8 +13,7 @@ namespace Protocol
         public Frame BuildRequest(int optionSelected)
         {
             Frame requestFrame = new Frame();
-            requestFrame.Header =  (int) Header.Request;
-            requestFrame.Command = optionSelected;
+            requestFrame.CreateFrame((int)Header.Request, optionSelected);
 
             switch ((Command) optionSelected)
             {
@@ -159,13 +158,12 @@ namespace Protocol
             
             string nameOfImage = new FileInfo(path).Name;
             byte[] imageData = File.ReadAllBytes(path);
-            int lenghtOfDataWithoutImage = gameName.Length + nameOfImage.Length + path.Length + 2; //2 porque son dos '#'
+            int lenghtOfDataWithoutImage = gameName.Length + nameOfImage.Length + path.Length + 1; //1 porque es un '#'
             
             List<byte> imageRequestData = new List<byte>();
             imageRequestData.AddRange(BitConverter.GetBytes(lenghtOfDataWithoutImage));
             imageRequestData.AddRange(Encoding.UTF8.GetBytes($"{gameName}#"));
-            imageRequestData.AddRange(Encoding.UTF8.GetBytes($"{nameOfImage}#"));
-            imageRequestData.AddRange(Encoding.UTF8.GetBytes($"{path}"));
+            imageRequestData.AddRange(Encoding.UTF8.GetBytes($"{nameOfImage}"));
             imageRequestData.AddRange(imageData);
 
             byte[] data = imageRequestData.ToArray();

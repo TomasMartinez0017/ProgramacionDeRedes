@@ -1,6 +1,6 @@
 ﻿namespace Protocol
 {
-    public enum Status
+    public enum FrameStatus
     {
         Ok,
         Error
