@@ -42,7 +42,6 @@ namespace Server
                 }
                 catch (SocketException)
                 {
-                    Console.WriteLine("Server shutting down");
                     ShutDownConnections();
                     _serverState = ServerState.Down;
                 }

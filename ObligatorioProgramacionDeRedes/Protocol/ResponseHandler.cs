@@ -475,8 +475,6 @@ namespace Protocol
                 response.Status = (int) Status.Error;
                 return response;
             }
-            
-            
         }
 
         private Frame CreateBuyGameResponse(Frame frame, User user)

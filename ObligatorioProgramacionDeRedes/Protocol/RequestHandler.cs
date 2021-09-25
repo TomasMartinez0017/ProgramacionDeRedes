@@ -50,7 +50,6 @@ namespace Protocol
                 case Command.DownLoadImage:
                     BuildDownloadGameImage(requestFrame);
                     break;
-                    
             }
 
             return requestFrame;

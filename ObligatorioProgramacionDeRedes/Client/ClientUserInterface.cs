@@ -1,6 +1,7 @@
 ﻿using System;
 using Domain;
 using System.Collections.Specialized;
+using System.Text.RegularExpressions;
 using Client.Connections;
 using DataAccess;
 using Protocol;
@@ -37,10 +38,15 @@ namespace Client
                 {
                     Frame request = _requestHandler.BuildRequest(option);
                     Frame response = _connectionsHandler.SendRequestAndGetResponse(request);
-
-                    string data = _responseHandler.ProcessResponse(response);
-                    Console.WriteLine(data);
-
+                    if (response != null)
+                    {
+                        string data = _responseHandler.ProcessResponse(response);
+                        Console.WriteLine(data);
+                    }
+                    else
+                    {
+                        _connectionsHandler.ShutDown();
+                    }
                 }
             }
         }
@@ -64,16 +70,28 @@ namespace Client
             Console.WriteLine("11 - Sign up");
             Console.WriteLine("12 - Log in");
 
-            option = Convert.ToInt32(Console.ReadLine());
-
-            if (option < 0 || option > 12)
+            string optionSelected = Console.ReadLine();
+            if (OptionIsNumeric(optionSelected))
+            {
+                option = Convert.ToInt32(optionSelected);
+                if (option < 0 || option > 12)
+                {
+                    Console.WriteLine("Invalid option");
+                    option = DeployMenu();
+                }
+                return option - 1; //Comandos arrancan en 0 por eso debemos corregir restando 1
+            }
+            else
             {
                 Console.WriteLine("Invalid option");
-                option = DeployMenu();
+                return DeployMenu();
             }
-            
-            return option - 1; //Comandos arrancan en 0 por eso debemos corregir restando 1
         }
-
+        private bool OptionIsNumeric(string option)
+        {
+          Regex onlyNumbers =  new Regex("^[0-9]*$");
+          return onlyNumbers.IsMatch(option);
+        }
     }
+   
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using CustomExceptions;
@@ -51,20 +52,24 @@ namespace Server
             {
                 ActiveUserRepository activeUserRepository = ActiveUserRepository.GetInstance();
                 List<User> usersConnected = activeUserRepository.GetUsers();
-            
+
                 Frame request = _protocol.Receive();
                 Frame response = _responseHandler.GetResponse(request, usersConnected, _userConnected);
 
                 ManageSignUp(request, response, activeUserRepository);
 
                 ManageLogIn(request, response, activeUserRepository);
-            
+
                 _protocol.Send(response);
             }
             catch (ClientExcpetion e)
             {
                 Console.WriteLine(e.Message);
                 ShutDown();
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine("Server terminated connection to client");
             }
         }
 
