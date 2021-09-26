@@ -43,5 +43,27 @@ namespace Domain
             }
         }
 
+        public string ConvertRating()
+        {
+            string rating = "";
+            switch (this.Rating)
+            {
+                case "Everyone":
+                    rating="1";
+                    break;
+                case "Teen":
+                    rating= "2";
+                    break;
+                case "Mature":
+                    rating= "3";
+                    break;
+                case "Adults Only":
+                    rating= "4";
+                    break;
+            }
+
+            return rating;
+        }
+
     }
 }

@@ -47,7 +47,10 @@ namespace Protocol
                     BuildUpdateGameRequest(requestFrame);
                     break;
                 case Command.DownLoadImage:
-                    BuildDownloadGameImage(requestFrame);
+                    BuildDownloadGameImageRequest(requestFrame);
+                    break;
+                case Command.SearchGame:
+                    BuildSearchGameRequest(requestFrame);
                     break;
             }
 
@@ -77,7 +80,7 @@ namespace Protocol
             Console.WriteLine("4 - Adults Only");
             string rating = Console.ReadLine();
             
-            if (requestCommand == (int) Command.UpdateGame)
+            if (requestCommand == (int) Command.UpdateGame || requestCommand == (int)Command.SearchGame)
             {
                 if (string.IsNullOrEmpty(rating))
                 {
@@ -232,13 +235,28 @@ namespace Protocol
             requestFrame.DataLength = gameData.Length;
         }
 
-        private void BuildDownloadGameImage(Frame requestFrame)
+        private void BuildDownloadGameImageRequest(Frame requestFrame)
         {
             Console.WriteLine("Enter game name:");
             string gameName = Console.ReadLine();
             byte[] data = Encoding.UTF8.GetBytes($"{gameName}");
             requestFrame.Data = data;
             requestFrame.DataLength = requestFrame.Data.Length;
+        }
+
+        private void BuildSearchGameRequest(Frame requestFrame)
+        {
+            Console.WriteLine("Leave the field empty if you do not want to filter by attribute");
+            Console.WriteLine("Game title:");
+            string gameName = Console.ReadLine();
+            Console.WriteLine("Game genre:");
+            string gameGenre = Console.ReadLine();
+            Console.WriteLine("Game rating:");
+            string gameRating = GetRatingFromConsole((int)Command.UpdateGame);
+
+            byte[] gameData = Encoding.UTF8.GetBytes($"{gameName}#{gameGenre}#{gameRating}");
+            requestFrame.Data = gameData;
+            requestFrame.DataLength = gameData.Length;
         }
         
     }

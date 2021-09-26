@@ -104,5 +104,40 @@ namespace DataAccess
                 if (!string.IsNullOrEmpty(gameUpdated.Description)) gameToUpdate.Description = gameUpdated.Description;
             }
         }
+
+        public List<Game> GetGamesWithGenre(string genre)
+        {
+            lock (_gamesLocker)
+            {
+                List<Game> gamesToReturn = new List<Game>();
+                foreach (Game game in _games)
+                {
+                    if (game.Genre.Equals(genre))
+                    {
+                        gamesToReturn.Add(game);
+                    }
+                }
+
+                return gamesToReturn;
+            }
+        }
+        
+        public List<Game> GetGamesWithRating(string rating)
+        {
+            lock (_gamesLocker)
+            {
+                List<Game> gamesToReturn = new List<Game>();
+                foreach (Game game in _games)
+                {
+                    string ratingNumber = game.ConvertRating();
+                    if (ratingNumber.Equals(rating))
+                    {
+                        gamesToReturn.Add(game);
+                    }
+                }
+
+                return gamesToReturn;
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
 using CustomExceptions;
 using DataAccess;
@@ -49,6 +50,9 @@ namespace Protocol
                 case Command.DownLoadImage:
                     response = ProcessDownloadImageResponse(frame.Data);
                     break;
+                case Command.SearchGame:
+                    response = ProcessSearchGameResponse(frame.Data);
+                    break;
             }
             return response;
         }
@@ -92,6 +96,11 @@ namespace Protocol
         }
         private string ProcessShowCatalogResponse(byte[] data)
         {
+            return ProcessListOfGames(data);
+        }
+
+        private string ProcessListOfGames(byte[] data)
+        {
             string[] games = Encoding.UTF8.GetString(data).Split('/');
             string joinedGames = string.Join("", games);
             string[] gamesSeparated = joinedGames.Split('#');
@@ -110,7 +119,7 @@ namespace Protocol
                         break;
                     case 1:
                         string gameGenre = gamesSeparated[i];
-                        catalogResponse = catalogResponse +  "Genre: " + gameGenre + "\n";
+                        catalogResponse = catalogResponse + "Genre: " + gameGenre + "\n";
                         gameCounter++;
                         break;
                     case 2:
@@ -125,9 +134,10 @@ namespace Protocol
                         break;
                 }
             }
-            
+
             return catalogResponse;
         }
+
         private string ProcessDownloadImageResponse(byte[] data)
         {
             int imageInformationLength = GetImageInformationLength(data);
@@ -138,6 +148,11 @@ namespace Protocol
             File.WriteAllBytes("C:\\Users\\rafra\\Desktop"+"\\"+imageName,image);
             string response = "Image downloaded succesfully";
             return response;
+        }
+
+        private string ProcessSearchGameResponse(byte[] data)
+        {
+            return ProcessListOfGames(data);
         }
 
         public Frame GetResponse(Frame frame, List<User> usersConnected, User _userConnected)
@@ -178,6 +193,9 @@ namespace Protocol
                     break;
                 case Command.DownLoadImage:
                     response = CreateDownloadGameCoverResponse(frame);
+                    break;
+                case Command.SearchGame:
+                    response = CreateSearchGameResponse(frame);
                     break;
             }
 
@@ -684,6 +702,95 @@ namespace Protocol
             return response;
         }
 
+        private Frame CreateSearchGameResponse(Frame frame)
+        {
+            Frame response = new Frame();
+            response.CreateFrame((int)Header.Response, (int)Command.SearchGame);
+
+            string[] data = Encoding.UTF8.GetString(frame.Data).Split("#");
+
+            string gameName = data[0];
+            string genre = data[1];
+            string rating = data[2];
+
+            List<Game> gamesWithGenre = null;
+            List<Game> gamesWithRating = null;
+            List<Game> joinedGamesWithGenreAndGamesWithRating = null;
+            List<Game> joinedList = null;
+            GameRepository gameRepository=GameRepository.GetInstance();
+
+            if (!string.IsNullOrEmpty(genre)) gamesWithGenre = gameRepository.GetGamesWithGenre(genre);
+            if (!string.IsNullOrEmpty(rating)) gamesWithRating = gameRepository.GetGamesWithRating(rating);
+            Game game = gameRepository.GetGame(gameName);
+
+            if (gamesWithGenre == null && gamesWithRating != null)
+            {
+                joinedGamesWithGenreAndGamesWithRating = gamesWithRating;
+            }
+            else if (gamesWithGenre != null && gamesWithRating == null)
+            {
+                joinedGamesWithGenreAndGamesWithRating = gamesWithGenre;
+            }
+            else if(gamesWithGenre!=null && gamesWithRating!=null)
+            {
+                joinedGamesWithGenreAndGamesWithRating = JoinListOfGamesGenreAndRating(gamesWithGenre, gamesWithRating);
+            }
+
+            if (game == null && joinedGamesWithGenreAndGamesWithRating == null)
+            {
+                joinedList = new List<Game>();
+            }
+            else if(game!=null && joinedGamesWithGenreAndGamesWithRating == null)
+            {
+                joinedList = new List<Game>();
+                joinedList.Add(game);
+            }
+            else if (game == null && joinedGamesWithGenreAndGamesWithRating != null)
+            {
+                joinedList = joinedGamesWithGenreAndGamesWithRating;
+            }
+            else if (game != null && joinedGamesWithGenreAndGamesWithRating != null)
+            {
+                joinedList = JoinTitleGenreAndRating(gameName, joinedGamesWithGenreAndGamesWithRating);
+            }
+            
+            List<byte[]> serializedGames = SerializeGames(joinedList);
+            byte[] serializedList = SerializeListOfGames(serializedGames);
+            response.Data = serializedList;
+            response.DataLength = response.Data.Length;
+            return response;
+        }
+
+        private List<Game> JoinListOfGamesGenreAndRating(List<Game> gamesWithGenre, List<Game> gamesWithRating)
+        {
+            List<Game> joinedList = new List<Game>();
+            foreach (Game gameGenre in gamesWithGenre)
+            {
+                foreach (Game gameRating in gamesWithRating)
+                {
+                    if (gameGenre.Title.Equals(gameRating.Title))
+                    {
+                        joinedList.Add(gameGenre);
+                    }
+                }
+            }
+            return joinedList;
+        }
         
+        private List<Game> JoinTitleGenreAndRating(string gameName, List<Game> joinedListRatingAndGenre)
+        {
+            List<Game> joinedList = new List<Game>();
+            foreach (Game game in joinedListRatingAndGenre)
+            {
+                if (game.Title.Equals(gameName))
+                {
+                    joinedList.Add(game);
+                }
+            }
+
+            return joinedList;
+        }
+
+
     }
 }
