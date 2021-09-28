@@ -161,7 +161,7 @@ namespace Protocol
             
             string nameOfImage = new FileInfo(path).Name;
             byte[] imageData = File.ReadAllBytes(path);
-            int lenghtOfDataWithoutImage = gameName.Length + nameOfImage.Length + path.Length + 1; //1 porque es un '#'
+            int lenghtOfDataWithoutImage = gameName.Length + nameOfImage.Length + 1; //1 porque es un '#'
             
             List<byte> imageRequestData = new List<byte>();
             imageRequestData.AddRange(BitConverter.GetBytes(lenghtOfDataWithoutImage));

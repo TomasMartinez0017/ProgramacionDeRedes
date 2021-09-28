@@ -65,7 +65,7 @@ namespace Client
             Console.WriteLine("6 - Delete game");
             Console.WriteLine("7 - Search game");
             Console.WriteLine("8 - Show game reviews");
-            Console.WriteLine("9 - Upload game cover");
+            Console.WriteLine("9 - Upload/Update game cover");
             Console.WriteLine("10 - Download game cover");
             Console.WriteLine("11 - Sign up");
             Console.WriteLine("12 - Log in");

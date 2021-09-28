@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Versioning;
+using System.Configuration;
 using System.Text;
 using CustomExceptions;
 using DataAccess;
@@ -145,7 +145,8 @@ namespace Protocol
             byte[] imageInformation = new byte[imageInformationLength];
             Array.Copy(data, 4, imageInformation, 0, imageInformationLength);
             string imageName = Encoding.UTF8.GetString(imageInformation);
-            File.WriteAllBytes("C:\\Users\\rafra\\Desktop"+"\\"+imageName,image);
+            string downloadPath = ConfigurationManager.AppSettings["DownloadPath"];
+            File.WriteAllBytes(ConfigurationManager.AppSettings["DownloadPath"]+imageName,image);
             string response = "Image downloaded succesfully";
             return response;
         }

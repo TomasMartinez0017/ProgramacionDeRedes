@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net.Sockets;
 using System.Threading;
 
 namespace Client
@@ -8,7 +9,15 @@ namespace Client
         static void Main(string[] args)
         {
             ClientUserInterface userInterface = new ClientUserInterface();
-            userInterface.StartClient();
+            try
+            {
+                userInterface.StartClient();
+            }
+            catch (SocketException)
+            {
+                Console.WriteLine("ERROR: Server is offline.");
+            }
+            
         }
         
     }

@@ -9,4 +9,8 @@
       <ProjectReference Include="..\Domain\Domain.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0-preview.7.21377.19" />
+    </ItemGroup>
+
 </Project>
