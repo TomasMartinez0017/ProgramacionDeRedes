@@ -71,19 +71,19 @@ namespace Client
             Console.WriteLine("12 - Log in");
 
             string optionSelected = Console.ReadLine();
-            if (OptionIsNumeric(optionSelected))
+            if (OptionIsNumeric(optionSelected) && !String.IsNullOrEmpty(optionSelected))
             {
                 option = Convert.ToInt32(optionSelected);
                 if (option < 0 || option > 12)
                 {
-                    Console.WriteLine("Invalid option");
+                    Console.WriteLine("ERROR: Invalid option.\n");
                     option = DeployMenu();
                 }
                 return option - 1; //Comandos arrancan en 0 por eso debemos corregir restando 1
             }
             else
             {
-                Console.WriteLine("Invalid option");
+                Console.WriteLine("ERROR: Invalid option.\n");
                 return DeployMenu();
             }
         }
