@@ -18,7 +18,7 @@ namespace Protocol
             switch ((Command) frame.Command)
             {
                 case Command.ShowCatalog:
-                    response = ProcessShowCatalogResponse(frame.Data);
+                    response = ProcessShowCatalogResponse(frame);
                     break;
                 case Command.PublishGame:
                     response = Encoding.UTF8.GetString(frame.Data);
@@ -39,7 +39,7 @@ namespace Protocol
                     response = Encoding.UTF8.GetString(frame.Data);
                     break;
                 case Command.ShowGameReviews:
-                    response = ProcessShowGameReviews(frame.Data);
+                    response = ProcessShowGameReviews(frame);
                     break;
                 case Command.DeleteGame:
                     response = Encoding.UTF8.GetString(frame.Data);
@@ -48,7 +48,7 @@ namespace Protocol
                     response=Encoding.UTF8.GetString(frame.Data);
                     break;
                 case Command.DownLoadImage:
-                    response = ProcessDownloadImageResponse(frame.Data);
+                    response = ProcessDownloadImageResponse(frame);
                     break;
                 case Command.SearchGame:
                     response = ProcessSearchGameResponse(frame.Data);
@@ -56,47 +56,63 @@ namespace Protocol
             }
             return response;
         }
-        private string ProcessShowGameReviews(byte[] data)
+        private string ProcessShowGameReviews(Frame frame)
         {
-            string[] reviews = Encoding.UTF8.GetString(data).Split('/');
-            string joinedReviews = string.Join("", reviews);
-            string[] reviewsSeparated = joinedReviews.Split('#');
-
-            int reviewCounter = 0;
-            string reviewsResponse = "";
-            int scoreTotal = 0;
-            
-            for (int i = 0; i < reviewsSeparated.Length - 1; i++)
+            if (frame.Status.Equals(0))
             {
-                switch (reviewCounter)
-                {
-                    case 0:
-                        string reviewUser = reviewsSeparated[i];
-                        reviewsResponse = reviewsResponse + "User: " + reviewUser + "\n";
-                        reviewCounter++;
-                        break;
-                    case 1:
-                        string reviewScore = reviewsSeparated[i];
-                        reviewsResponse = reviewsResponse +  "Score: " + reviewScore + "\n";
-                        reviewCounter++;
-                        scoreTotal += Convert.ToInt32(reviewScore); 
-                        break;
-                    case 2:
-                        string reviewComment = reviewsSeparated[i];
-                        reviewsResponse = reviewsResponse + "Comment: " + reviewComment + "\n";
-                        reviewCounter = 0;
-                        break;
-                }
-            }
+                string[] reviews = Encoding.UTF8.GetString(frame.Data).Split('/');
+                string joinedReviews = string.Join("", reviews);
+                string[] reviewsSeparated = joinedReviews.Split('#');
 
-            int scoreAverage = scoreTotal / reviews.Length;
-            reviewsResponse = reviewsResponse + " Score Average: " + scoreAverage + "\n";
+                int reviewCounter = 0;
+                string reviewsResponse = "";
+                int scoreTotal = 0;
             
-            return reviewsResponse;
+                for (int i = 0; i < reviewsSeparated.Length - 1; i++)
+                {
+                    switch (reviewCounter)
+                    {
+                        case 0:
+                            string reviewUser = reviewsSeparated[i];
+                            reviewsResponse = reviewsResponse + "User: " + reviewUser + "\n";
+                            reviewCounter++;
+                            break;
+                        case 1:
+                            string reviewScore = reviewsSeparated[i];
+                            reviewsResponse = reviewsResponse +  "Score: " + reviewScore + "\n";
+                            reviewCounter++;
+                            scoreTotal += Convert.ToInt32(reviewScore); 
+                            break;
+                        case 2:
+                            string reviewComment = reviewsSeparated[i];
+                            reviewsResponse = reviewsResponse + "Comment: " + reviewComment + "\n";
+                            reviewCounter = 0;
+                            break;
+                    }
+                }
+
+                int scoreAverage = scoreTotal / reviews.Length;
+                reviewsResponse = reviewsResponse + " Score Average: " + scoreAverage + "\n";
+            
+                return reviewsResponse;
+            }
+            else
+            {
+                return Encoding.UTF8.GetString(frame.Data);
+            }
+            
         }
-        private string ProcessShowCatalogResponse(byte[] data)
+        private string ProcessShowCatalogResponse(Frame frame)
         {
-            return ProcessListOfGames(data);
+            if (frame.Status.Equals(0))
+            {
+                return ProcessListOfGames(frame.Data);
+            }
+            else
+            {
+                return Encoding.UTF8.GetString(frame.Data);
+            }
+            
         }
 
         private string ProcessListOfGames(byte[] data)
@@ -138,17 +154,25 @@ namespace Protocol
             return catalogResponse;
         }
 
-        private string ProcessDownloadImageResponse(byte[] data)
+        private string ProcessDownloadImageResponse(Frame frame)
         {
-            int imageInformationLength = GetImageInformationLength(data);
-            byte[] image = GetImage(data, imageInformationLength);
-            byte[] imageInformation = new byte[imageInformationLength];
-            Array.Copy(data, 4, imageInformation, 0, imageInformationLength);
-            string imageName = Encoding.UTF8.GetString(imageInformation);
-            string downloadPath = ConfigurationManager.AppSettings["DownloadPath"];
-            File.WriteAllBytes(ConfigurationManager.AppSettings["DownloadPath"]+imageName,image);
-            string response = "Image downloaded succesfully";
-            return response;
+            if (frame.Status.Equals(0))
+            {
+                byte[] data = frame.Data;
+                int imageInformationLength = GetImageInformationLength(data);
+                byte[] image = GetImage(data, imageInformationLength);
+                byte[] imageInformation = new byte[imageInformationLength];
+                Array.Copy(data, 4, imageInformation, 0, imageInformationLength);
+                string imageName = Encoding.UTF8.GetString(imageInformation);
+                File.WriteAllBytes(ConfigurationManager.AppSettings["DownloadPath"]+imageName,image);
+                string response = "Image downloaded successfully.\n";
+                return response;
+            }
+            else
+            {
+                return Encoding.UTF8.GetString(frame.Data);
+            }
+            
         }
 
         private string ProcessSearchGameResponse(byte[] data)
@@ -218,11 +242,11 @@ namespace Protocol
                 if (!repository.GameExists(newGame))
                 {
                     repository.AddGame(newGame);
-                    message = "Game published";
+                    message = "Game published.\n";
                 }
                 else
                 {
-                    message = "ERROR: The game you are trying to publish already exists";
+                    message = "ERROR: The game you are trying to publish already exists.\n";
                     response.Status = (int) FrameStatus.Error;
                 }
 
@@ -259,12 +283,21 @@ namespace Protocol
             GameRepository repository = GameRepository.GetInstance();
             List<Game> gamesInRepository = repository.GetAllGames();
 
-            List<byte[]> serializedGames = SerializeGames(gamesInRepository);
-            byte[] serializedList = SerializeListOfGames(serializedGames);
+            if (gamesInRepository.Count != 0)
+            {
+                List<byte[]> serializedGames = SerializeGames(gamesInRepository);
+                byte[] serializedList = SerializeListOfGames(serializedGames);
 
-            response.Data = serializedList;
-            response.DataLength = response.Data.Length;
-            response.Status = (int) FrameStatus.Ok;
+                response.Data = serializedList;
+                response.DataLength = response.Data.Length;
+            }
+            else
+            {
+                response.Data = Encoding.UTF8.GetBytes("ERROR: The catalog is empty.\n");
+                response.DataLength = response.Data.Length;
+                response.Status = (int) FrameStatus.Error;
+            }
+            
             return response;
         }
 
@@ -320,7 +353,7 @@ namespace Protocol
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: User already exist.");
+                response.Data = Encoding.UTF8.GetBytes("ERROR: User already exist.\n");
                 response.Status = (int) FrameStatus.Error;
                 response.DataLength = response.Data.Length;
             }
@@ -338,7 +371,7 @@ namespace Protocol
 
             if (UserAlreadyLoggedIn(username, usersConnected))
             {
-                response.Data = response.Data = Encoding.UTF8.GetBytes("ERROR: User already has an active session");
+                response.Data = response.Data = Encoding.UTF8.GetBytes("ERROR: User already has an active session.\n");
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
                 return response;
@@ -350,7 +383,7 @@ namespace Protocol
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: User does not exist.");
+                response.Data = Encoding.UTF8.GetBytes("ERROR: User does not exist.\n");
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
             }
@@ -395,7 +428,7 @@ namespace Protocol
             if (gameToUploadImage == null)
             {
                 response.Status = (int) FrameStatus.Error;
-                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found.");
+                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found.\n");
                 response.DataLength = response.Data.Length;
             }
             else
@@ -404,7 +437,7 @@ namespace Protocol
             
                 File.WriteAllBytes(Directory.GetCurrentDirectory() + "\\" + imageName, image);
 
-                response.Data = Encoding.UTF8.GetBytes("Image uploaded.");
+                response.Data = Encoding.UTF8.GetBytes("Image uploaded.\n");
                 response.DataLength = response.Data.Length;
             }
             
@@ -455,7 +488,7 @@ namespace Protocol
                 
                     if (game == null)
                     {
-                        message = "ERROR: Game not found.";
+                        message = "ERROR: Game not found.\n";
                         response.Status = (int) FrameStatus.Error;
                     }
                     else
@@ -463,7 +496,7 @@ namespace Protocol
                         review.Game = game;
                         ReviewRepository reviewRepository = ReviewRepository.GetInstance();
                         reviewRepository.AddReview(review);
-                        message = "Review created successfully.";
+                        message = "Review created successfully.\n";
                     }
 
                     response.Data = Encoding.UTF8.GetBytes(message);
@@ -481,7 +514,7 @@ namespace Protocol
             }
             else
             {
-                message = "ERROR: User must login before posting a review.";
+                message = "ERROR: User must login before posting a review.\n";
                 response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
@@ -510,18 +543,18 @@ namespace Protocol
                    if (!userToAddGame.HasGame(gameThatUserWants.Title))
                    {
                        userToAddGame.Games.Add(gameThatUserWants);
-                       message = "Game added to your library";
+                       message = "Game added to your library.\n";
                        frame.Status = (int) FrameStatus.Error;
                    }
                    else
                    {
-                       message = $"ERROR: User already has this game: {gameName}.";
+                       message = $"ERROR: User already has this game: {gameName}.\n";
                        frame.Status = (int) FrameStatus.Error;
                    }
                }
                else
                {
-                   message = "ERROR: Game not found.";
+                   message = "ERROR: Game not found.\n";
                    frame.Status = (int) FrameStatus.Error;
                }
                 
@@ -532,7 +565,7 @@ namespace Protocol
             }
             else
             {
-                message = "ERROR: User must login before buying a game.";
+                message = "ERROR: User must login before buying a game.\n";
                 response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
                 return response;
@@ -554,16 +587,26 @@ namespace Protocol
             if (gameToShow != null)
             {
                 List<Review> reviewsOfGame = reviewRepository.GetReviews(gameToShow);
-                List<byte[]> serializedReviews = SerializeReviews(reviewsOfGame);
-            
-                byte[] serializedList = SerializeListOfReviews(serializedReviews);
 
-                response.Data = serializedList;
-                response.DataLength = response.Data.Length;
+                if (reviewsOfGame.Count != 0)
+                {
+                    List<byte[]> serializedReviews = SerializeReviews(reviewsOfGame);
+            
+                    byte[] serializedList = SerializeListOfReviews(serializedReviews);
+
+                    response.Data = serializedList;
+                    response.DataLength = response.Data.Length;
+                }
+                else
+                {
+                    response.Data = Encoding.UTF8.GetBytes("Game has no reviews.\n");
+                    response.DataLength = response.Data.Length;
+                }
+                
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("Game not found");
+                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found.\n");
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
             }
@@ -626,11 +669,11 @@ namespace Protocol
                 userRepository.DeleteBoughtGame(gameName);
                 reviewRepository.DeleteReview(gameName);
                 
-                message = "Game deleted succesfully";
+                message = "Game deleted successfully.\n";
             }
             else
             {
-                message = "Could not find game";
+                message = "ERROR: Could not find game.\n";
             }
 
             response.Data = Encoding.UTF8.GetBytes(message);
@@ -659,11 +702,11 @@ namespace Protocol
             if (gameRepository.GameExists(gameSearched))
             {
                 gameRepository.UpdateGame(gameNameSearched, gameUpdated);
-                message = "Game updated succesfully";
+                message = "Game updated successfully.\n";
             }
             else
             {
-                message = "ERROR: Could not find game";
+                message = "ERROR: Could not find game.\n";
             }
 
             response.Data = Encoding.UTF8.GetBytes(message);
@@ -682,22 +725,33 @@ namespace Protocol
             
             if (gameSearched != null)
             {
-                string nameOfImage = new FileInfo(gameSearched.Image).Name;
-                byte[] imageData = File.ReadAllBytes(gameSearched.Image);
-                List<byte> imageResponseData = new List<byte>();
-                int lengthOfImageName = nameOfImage.Length;
+                if (!string.IsNullOrEmpty(gameSearched.Image))
+                {
+                    string nameOfImage = new FileInfo(gameSearched.Image).Name;
+                    byte[] imageData = File.ReadAllBytes(gameSearched.Image);
+                    List<byte> imageResponseData = new List<byte>();
+                    int lengthOfImageName = nameOfImage.Length;
                 
-                imageResponseData.AddRange(BitConverter.GetBytes(lengthOfImageName));
-                imageResponseData.AddRange(Encoding.UTF8.GetBytes($"{nameOfImage}"));
-                imageResponseData.AddRange(imageData);
+                    imageResponseData.AddRange(BitConverter.GetBytes(lengthOfImageName));
+                    imageResponseData.AddRange(Encoding.UTF8.GetBytes($"{nameOfImage}"));
+                    imageResponseData.AddRange(imageData);
                 
-                response.Data = imageResponseData.ToArray();
-                response.DataLength = response.Data.Length;
+                    response.Data = imageResponseData.ToArray();
+                    response.DataLength = response.Data.Length;
+                }
+                else
+                {
+                    response.Data = Encoding.UTF8.GetBytes("ERROR: Games does not contain a cover.\n");
+                    response.DataLength = response.Data.Length;
+                    response.Status = (int) FrameStatus.Error;
+                }
+                
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found");
+                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found.\n");
                 response.DataLength = response.Data.Length;
+                response.Status = (int) FrameStatus.Error;
             }
             
             return response;
@@ -791,7 +845,5 @@ namespace Protocol
 
             return joinedList;
         }
-
-
     }
 }
