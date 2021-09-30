@@ -88,24 +88,22 @@ namespace Protocol
                 }
                 else
                 {
-                    ValidateRating(rating);
+                    while (!RatingIsNumeric(rating) || Convert.ToInt32(rating) < 0 || Convert.ToInt32(rating) > 4)
+                    {
+                        Console.WriteLine("ERROR: Please enter a valid rating");
+                        rating = Console.ReadLine();
+                    }
                     return rating;
                 }
             }
             else
             {
-                ValidateRating(rating);
+                while (!RatingIsNumeric(rating) || Convert.ToInt32(rating) < 0 || Convert.ToInt32(rating) > 4)
+                {
+                    Console.WriteLine("ERROR: Please enter a valid rating");
+                    rating = Console.ReadLine();
+                }
                 return rating;  
-            }
-            
-        }
-
-        private void ValidateRating(string rating)
-        {
-            while (!RatingIsNumeric(rating) || Convert.ToInt32(rating) < 0 || Convert.ToInt32(rating) > 4)
-            {
-                Console.WriteLine("ERROR: Please enter a valid rating");
-                rating = Console.ReadLine();
             }
         }
 

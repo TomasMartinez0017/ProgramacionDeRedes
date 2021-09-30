@@ -44,7 +44,6 @@ namespace Protocol
                 }
                 else
                 {
-                    int bytesSent = 0;
                     int dataLeftSize = data.Length - offset;
                     byte[] dataToSend = new byte[dataLeftSize];
                     Array.Copy(data, offset, dataToSend, 0, dataLeftSize);

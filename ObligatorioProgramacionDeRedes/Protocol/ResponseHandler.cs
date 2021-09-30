@@ -92,7 +92,7 @@ namespace Protocol
                 }
 
                 int scoreAverage = scoreTotal / reviews.Length;
-                reviewsResponse = reviewsResponse + " Score Average: " + scoreAverage + "\n";
+                reviewsResponse = reviewsResponse + "\n" + "Score Average: " + scoreAverage + "\n";
             
                 return reviewsResponse;
             }
