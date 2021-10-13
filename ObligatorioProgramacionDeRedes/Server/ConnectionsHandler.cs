@@ -40,12 +40,13 @@ namespace Server
                     clientThread.Start();
                     Console.WriteLine("Accepted new client connection");
                 }
+                
                 catch (SocketException)
                 {
                     ShutDownConnections();
                     _serverState = ServerState.Down;
                 }
-                
+
             }
         }
 
@@ -58,16 +59,9 @@ namespace Server
         {
             for (int i = _connections.Count - 1; i >= 0; i--)
             {
-                try
-                {
-                    Connection connection = _connections.ElementAt(i);
-                    connection.ShutDown();
-                    _connections.RemoveAt(i);
-                }
-                catch (Exception)
-                {
-                    Console.WriteLine("Connection already closed");
-                }
+                Connection connection = _connections.ElementAt(i);
+                connection.ShutDown();
+                _connections.RemoveAt(i);
             }
         }
         
