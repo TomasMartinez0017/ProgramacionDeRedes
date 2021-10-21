@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using CustomExceptions;
 
 namespace Protocol
@@ -13,21 +14,21 @@ namespace Protocol
             _tcpClient = tcpClient;
         }
 
-        public void Send(Frame frame)
+        public async Task SendAsync(Frame frame)
         {
-            SendAndDivideData(BitConverter.GetBytes(frame.Header), 1);
-            SendAndDivideData(BitConverter.GetBytes(frame.Command), 1);
-            SendAndDivideData(BitConverter.GetBytes(frame.DataLength), 1);
+            await SendAndDivideDataAsync(BitConverter.GetBytes(frame.Header), 1);
+            await SendAndDivideDataAsync(BitConverter.GetBytes(frame.Command), 1);
+            await SendAndDivideDataAsync(BitConverter.GetBytes(frame.DataLength), 1);
 
             if ((Header) frame.Header == Header.Response)
             {
-                SendAndDivideData(BitConverter.GetBytes(frame.Status), 1);
+                await SendAndDivideDataAsync(BitConverter.GetBytes(frame.Status), 1);
             }
             
-            SendAndDivideData(frame.Data, AmountOfSlotsNeeded(frame));
+            await SendAndDivideDataAsync(frame.Data, AmountOfSlotsNeeded(frame));
         }
         
-        private void SendAndDivideData(byte[] data, int slots)
+        private async Task SendAndDivideDataAsync(byte[] data, int slots)
         {
             NetworkStream stream = _tcpClient.GetStream();
             int offset = 0;
@@ -39,7 +40,7 @@ namespace Protocol
                 {
                     var dataToSend = new byte[FrameConstants.MaxPacketSize];
                     Array.Copy(data, offset, dataToSend, 0, FrameConstants.MaxPacketSize);
-                    stream.Write(dataToSend);
+                    await stream.WriteAsync(dataToSend);
                     offset += FrameConstants.MaxPacketSize;
                 }
                 else
@@ -47,32 +48,32 @@ namespace Protocol
                     int dataLeftSize = data.Length - offset;
                     byte[] dataToSend = new byte[dataLeftSize];
                     Array.Copy(data, offset, dataToSend, 0, dataLeftSize);
-                    stream.Write(dataToSend);
+                    await stream.WriteAsync(dataToSend);
                     offset += dataLeftSize;
                 }
                 currentSlot++;
             }
         }
 
-        public Frame Receive()
+        public async Task<Frame> ReceiveAsync()
         {
             Frame frame = new Frame();
 
-            frame.Header = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.HeaderLength, 1));
-            frame.Command = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.CommandLength, 1));
-            frame.DataLength = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.DataLength, 1));
+            frame.Header = BitConverter.ToInt32(await ReceiveDividedDataAsync(FrameConstants.HeaderLength, 1));
+            frame.Command = BitConverter.ToInt32(await ReceiveDividedDataAsync(FrameConstants.CommandLength, 1));
+            frame.DataLength = BitConverter.ToInt32(await ReceiveDividedDataAsync(FrameConstants.DataLength, 1));
             
             if ((Header) frame.Header == Header.Response)
             {
-                frame.Status = BitConverter.ToInt32(ReceiveDividedData(FrameConstants.StatusLength, 1));
+                frame.Status = BitConverter.ToInt32(await ReceiveDividedDataAsync(FrameConstants.StatusLength, 1));
             }
             
-            frame.Data = ReceiveDividedData(frame.DataLength, AmountOfSlotsNeeded(frame));
+            frame.Data = await ReceiveDividedDataAsync(frame.DataLength, AmountOfSlotsNeeded(frame));
 
             return frame;
         }
 
-        private byte[] ReceiveDividedData(int fileLength, int slots)
+        private async Task <byte[]> ReceiveDividedDataAsync(int fileLength, int slots)
         {
             NetworkStream stream = _tcpClient.GetStream();
             byte[] buffer = new byte[fileLength];
@@ -83,14 +84,14 @@ namespace Protocol
             {
                 if(currentSlot < slots)
                 {
-                    byte[] receivedBytes = Read(FrameConstants.MaxPacketSize, stream);
+                    byte[] receivedBytes = await ReadAsync(FrameConstants.MaxPacketSize, stream);
                     Array.Copy(receivedBytes,0,buffer,offset,FrameConstants.MaxPacketSize);
                     offset += FrameConstants.MaxPacketSize;
                 }
                 else
                 {
                     int dataLeft = fileLength - offset;
-                    byte[] receivedBytes = Read(dataLeft, stream);
+                    byte[] receivedBytes = await ReadAsync(dataLeft, stream);
                     Array.Copy(receivedBytes,0,buffer,offset,dataLeft);
                     offset += dataLeft; 
                 }
@@ -99,13 +100,13 @@ namespace Protocol
             return buffer;
         }
 
-        private byte[] Read(int length, NetworkStream stream)
+        private async Task<byte[]> ReadAsync(int length, NetworkStream stream)
         {
             int dataReceived = 0;
             var data = new byte[length];
             while (dataReceived < length)
             {
-                var received = stream.Read(data, dataReceived, length - dataReceived);
+                var received = await stream.ReadAsync(data, dataReceived, length - dataReceived);
                 if (received == 0)
                 {
                     throw new ClientExcpetion(MessageException.ClientDisconnectedException); 

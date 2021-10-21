@@ -1,143 +1,137 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Domain;
 namespace DataAccess
 {
     public class GameRepository
     {
         private readonly List<Game> _games;
-        private object _gamesLocker;
         private static GameRepository _instance;
-        private static Object _instanceLocker = new Object();
+        private readonly SemaphoreSlim _gamesSemaphore;
+        private static readonly SemaphoreSlim _instanceSemaphore = new SemaphoreSlim(1);
 
         private GameRepository()
         {
             _games = new List<Game>();
-            _gamesLocker = new Object();
+            _gamesSemaphore = new SemaphoreSlim(1);
         }
         
         public static GameRepository GetInstance()
         {
-            lock (_instanceLocker)
+            _instanceSemaphore.Wait();
+            if (_instance == null)
             {
-                if (_instance == null)
-                {
-                    _instance = new GameRepository();
-                }
-
-                return _instance;
+                _instance = new GameRepository();
             }
+
+            _instanceSemaphore.Release();
+            return _instance;
+            
         }
         
-        public void AddGame(Game game)
+        public async Task AddGameAsync(Game game)
         {
-            lock (_gamesLocker)
-            {
-                this._games.Add(game);    
-            }
+            await _gamesSemaphore.WaitAsync();
+            this._games.Add(game);
+            _gamesSemaphore.Release();
         }
 
-        public bool GameExists(Game game)
+        public async Task<bool> GameExistsAsync(Game game)
         {
-            lock (_gamesLocker)
+            await _gamesSemaphore.WaitAsync();
+            foreach (Game gameInList in _games)
             {
-                foreach (Game gameInList in _games)
+                if (gameInList.Title.Equals(game.Title))
                 {
-                    if (gameInList.Title.Equals(game.Title))
-                    {
-                        return true;
-                    }
+                    _gamesSemaphore.Release();
+                    return true;
                 }
-
-                return false;
+                
             }
+            _gamesSemaphore.Release();
+            return false;
         }
 
-        public List<Game> GetAllGames()
+        public async Task<List<Game>> GetAllGamesAsync()
         {
-            lock (_gamesLocker)
-            {
-                List<Game> copyOfGames = new List<Game>(_games);
-                return copyOfGames;
-            }
+            await _gamesSemaphore.WaitAsync();
+            List<Game> copyOfGames = new List<Game>(_games);
+            _gamesSemaphore.Release();
+            return copyOfGames;
         }
 
-        public Game GetGame(string gameName)
+        public async Task<Game> GetGameAsync(string gameName)
         {
-            lock (_gamesLocker)
+            await _gamesSemaphore.WaitAsync();
+            foreach (Game game in _games)
             {
-                foreach (Game game in _games)
+                if (game.Title.Equals(gameName))
                 {
-                    if (game.Title.Equals(gameName))
-                    {
-                        return game;
-                    }
-                }
-
-                return null;
-            }
-        }
-
-        public void DeleteGame(string gameName)
-        {
-            lock (_gamesLocker)
-            {
-                for(int i=0; i<_games.Count; i++)
-                {
-                    if (_games.ElementAt(i).Title.Equals(gameName))
-                    {
-                        _games.Remove(_games.ElementAt(i));
-                    }
+                    _gamesSemaphore.Release();
+                    return game;
                 }
             }
+            _gamesSemaphore.Release();
+            return null;
         }
 
-        public void UpdateGame(string gameNameSearched, Game gameUpdated)
+        public async Task DeleteGameAsync(string gameName)
         {
-            lock (_gamesLocker)
+            await _gamesSemaphore.WaitAsync();
+            for(int i=0; i<_games.Count; i++)
             {
-                Game gameToUpdate = this.GetGame(gameNameSearched);
-                if(!string.IsNullOrEmpty(gameUpdated.Title)) gameToUpdate.Title = gameUpdated.Title;
-                if(!string.IsNullOrEmpty(gameUpdated.Genre)) gameToUpdate.Genre = gameUpdated.Genre;
-                if(!string.IsNullOrEmpty(gameUpdated.Rating)) gameToUpdate.Rating = gameUpdated.Rating;
-                if (!string.IsNullOrEmpty(gameUpdated.Description)) gameToUpdate.Description = gameUpdated.Description;
-            }
-        }
-
-        public List<Game> GetGamesWithGenre(string genre)
-        {
-            lock (_gamesLocker)
-            {
-                List<Game> gamesToReturn = new List<Game>();
-                foreach (Game game in _games)
+                if (_games.ElementAt(i).Title.Equals(gameName))
                 {
-                    if (game.Genre.Equals(genre))
-                    {
-                        gamesToReturn.Add(game);
-                    }
+                    _games.Remove(_games.ElementAt(i));
                 }
-
-                return gamesToReturn;
             }
+            _gamesSemaphore.Release();
+        }
+
+        public async Task UpdateGameAsync(string gameNameSearched, Game gameUpdated)
+        {
+            await _gamesSemaphore.WaitAsync();
+            Game gameToUpdate = await this.GetGameAsync(gameNameSearched);
+            if(!string.IsNullOrEmpty(gameUpdated.Title)) gameToUpdate.Title = gameUpdated.Title;
+            if(!string.IsNullOrEmpty(gameUpdated.Genre)) gameToUpdate.Genre = gameUpdated.Genre;
+            if(!string.IsNullOrEmpty(gameUpdated.Rating)) gameToUpdate.Rating = gameUpdated.Rating;
+            if (!string.IsNullOrEmpty(gameUpdated.Description)) gameToUpdate.Description = gameUpdated.Description;
+            _gamesSemaphore.Release();
+        }
+
+        public async Task<List<Game>> GetGamesWithGenreAsync(string genre)
+        {
+            await _gamesSemaphore.WaitAsync();
+            List<Game> gamesToReturn = new List<Game>();
+            foreach (Game game in _games)
+            {
+                if (game.Genre.Equals(genre))
+                {
+                    gamesToReturn.Add(game);
+                }
+            }
+            _gamesSemaphore.Release();
+            return gamesToReturn;
+
         }
         
-        public List<Game> GetGamesWithRating(string rating)
+        public async Task<List<Game>> GetGamesWithRatingAsync(string rating)
         {
-            lock (_gamesLocker)
+            await _gamesSemaphore.WaitAsync();
+            List<Game> gamesToReturn = new List<Game>();
+            foreach (Game game in _games)
             {
-                List<Game> gamesToReturn = new List<Game>();
-                foreach (Game game in _games)
+                string ratingNumber = game.ConvertRating();
+                if (ratingNumber.Equals(rating))
                 {
-                    string ratingNumber = game.ConvertRating();
-                    if (ratingNumber.Equals(rating))
-                    {
-                        gamesToReturn.Add(game);
-                    }
+                    gamesToReturn.Add(game);
                 }
-
-                return gamesToReturn;
             }
+            _gamesSemaphore.Release();
+            return gamesToReturn;
         }
     }
 }

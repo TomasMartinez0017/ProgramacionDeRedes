@@ -1,73 +1,70 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Domain;
 namespace DataAccess
 {
     public class ReviewRepository
     {
         private readonly List<Review> _reviews;
-        private object _reviewsLocker;
         private static ReviewRepository _instance;
-        private static Object _instanceLocker = new Object();
+        private readonly SemaphoreSlim _reviewsSemaphore;
+        private static readonly SemaphoreSlim _instanceSemaphore = new SemaphoreSlim(1);
 
         private ReviewRepository()
         {
             _reviews = new List<Review>();
-            _reviewsLocker = new Object();
+            _reviewsSemaphore = new SemaphoreSlim(1);
         }
         
         public static ReviewRepository GetInstance()
         {
-            lock (_instanceLocker)
+            _instanceSemaphore.Wait();
+            if (_instance == null)
             {
-                if (_instance == null)
-                {
-                    _instance = new ReviewRepository();
-                }
-
-                return _instance;
+                _instance = new ReviewRepository();
             }
+            _instanceSemaphore.Release();
+            return _instance;
+            
         }
         
-        public void AddReview(Review review)
+        public async Task AddReviewAsync(Review review)
         {
-            lock (_reviewsLocker)
-            {
-                this._reviews.Add(review);    
-            }
+            await _reviewsSemaphore.WaitAsync();
+            this._reviews.Add(review);
+            _reviewsSemaphore.Release();
         }
 
-        public List<Review> GetReviews(Game game)
+        public async Task<List<Review>> GetReviewsAsync(Game game)
         {
-            lock (_instanceLocker)
+            await _reviewsSemaphore.WaitAsync();
+            List<Review> listToReturn = new List<Review>();
+            foreach (Review review in _reviews)
             {
-                List<Review> listToReturn = new List<Review>();
-                foreach (Review review in _reviews)
+                if (review.Game.Title.Equals(game.Title))
                 {
-                    if (review.Game.Title.Equals(game.Title))
-                    {
-                        listToReturn.Add(review);
-                    }
+                    listToReturn.Add(review);
                 }
-                return listToReturn;
             }
-            
+            _reviewsSemaphore.Release();
+            return listToReturn;
         }
 
-        public void DeleteReview(string gameName)
+        public async Task DeleteReviewAsync(string gameName)
         {
-            lock (_instanceLocker)
+            await _reviewsSemaphore.WaitAsync();
+            for (int i = 0; i < _reviews.Count; i++)
             {
-                for (int i = 0; i < _reviews.Count; i++)
+                if (_reviews.ElementAt(i).Game.Title.Equals(gameName))
                 {
-                    if (_reviews.ElementAt(i).Game.Title.Equals(gameName))
-                    {
-                        _reviews.Remove(_reviews.ElementAt(i));
-                    }
+                    _reviews.Remove(_reviews.ElementAt(i));
                 }
             }
-            
+            _reviewsSemaphore.Release();
+
         }
     }
 }

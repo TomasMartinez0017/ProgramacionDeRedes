@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CustomExceptions;
 using Domain;
 namespace DataAccess
@@ -8,86 +10,81 @@ namespace DataAccess
     public class UserRepository
     {
         private readonly List<User> _users;
-        private object _usersLocker;
         private static UserRepository _instance;
-        private static Object _instanceLocker = new Object();
+        private readonly SemaphoreSlim _usersSemaphore;
+        private static readonly SemaphoreSlim _instanceSemaphore = new SemaphoreSlim(1);
 
         private UserRepository()
         {
             _users = new List<User>();
-            _usersLocker = new Object();
+            _usersSemaphore = new SemaphoreSlim(1);
         }
         
         public static UserRepository GetInstance()
         {
-            lock (_instanceLocker)
+            _instanceSemaphore.Wait();
+            if (_instance == null)
             {
-                if (_instance == null)
-                {
-                    _instance = new UserRepository();
-                }
-
-                return _instance;
+                _instance = new UserRepository();
             }
+
+            _instanceSemaphore.Release();
+            return _instance;
         }
 
-        public void AddUser(User user)
+        public async Task AddUserAsync(User user)
         {
-            lock (_usersLocker)
-            {
-                this._users.Add(user);    
-            }
+            await _usersSemaphore.WaitAsync();
+            this._users.Add(user);
+            _usersSemaphore.Release();
         }
 
-        public User GetUser(string username)
+        public async Task <User> GetUserAsync(string username)
         {
-            lock (_usersLocker)
-            {
-                User userToReturn = null;
+            await _usersSemaphore.WaitAsync();
+            User userToReturn = null;
                 
-                foreach (User user in _users)
+            foreach (User user in _users)
+            {
+                if (user.Username.Equals(username))
                 {
-                    if (user.Username.Equals(username))
-                    {
-                        userToReturn = user;
-                    }
+                    userToReturn = user;
                 }
-                return userToReturn;
             }
+            _usersSemaphore.Release();
+            return userToReturn;
         }
 
-        public bool UserExists(string username)
+        public async Task<bool> UserExistsAsync(string username)
         {
-            lock (_usersLocker)
+            await _usersSemaphore.WaitAsync();
+            foreach (User user in _users)
             {
-                foreach (User user in _users)
+                if (user.Username.Equals(username))
                 {
-                    if (user.Username.Equals(username))
-                    {
-                        return true;
-                    }
+                    _usersSemaphore.Release();
+                    return true;
                 }
-                
-                return false;
             }
+            _usersSemaphore.Release();
+            return false;
         }
 
-        public void DeleteBoughtGame(string gameName)
+        public async Task DeleteBoughtGameAsync(string gameName)
         {
-            lock (_usersLocker)
+            await _usersSemaphore.WaitAsync();
+            foreach (User user in _users)
             {
-                foreach (User user in _users)
+                List<Game> games = user.Games;
+                for (int i = 0; i < games.Count; i++)
                 {
-                    List<Game> games = user.Games;
-                    for (int i = 0; i < games.Count; i++)
+                    if (games.ElementAt(i).Title.Equals(gameName))
                     {
-                        if (games.ElementAt(i).Title.Equals(gameName))
-                        {
-                            games.Remove(games.ElementAt(i));
-                        }
+                        games.Remove(games.ElementAt(i));
                     }
                 }
             }
+            _usersSemaphore.Release();
         }
     }
 }
