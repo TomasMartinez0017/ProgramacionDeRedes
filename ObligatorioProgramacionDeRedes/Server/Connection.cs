@@ -17,16 +17,17 @@ namespace Server
     {
         private User _userConnected;
         private TcpClient _tcpClient;
+        private Socket _socketClient;
         private ConnectionState _state;
         private ProtocolHandler _protocol;
         private ResponseHandler _responseHandler;
         private SemaphoreSlim _connectionStateSempahore;
 
-        public Connection(TcpClient tcpClient)
+        public Connection(Socket socketClient)
         {
-            _tcpClient = tcpClient;
+            _socketClient = socketClient;
             _state = ConnectionState.Down;
-            _protocol = new ProtocolHandler(tcpClient);
+            _protocol = new ProtocolHandler(_socketClient);
             _responseHandler = new ResponseHandler();
             _userConnected = new User();
             _connectionStateSempahore = new SemaphoreSlim(1);

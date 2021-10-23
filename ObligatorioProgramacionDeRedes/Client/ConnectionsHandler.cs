@@ -13,29 +13,31 @@ namespace Client
 {
     public class ConnectionsHandler
     {
-        private TcpClient _tcpClient;
         private IPEndPoint _serverIpEndPoint;
-        private IPAddress _serverIpAddress;
-        private int _serverPort;
+
         private ProtocolHandler _protocol;
-        private ClientState _state= new ClientState();
+        private ClientState _state;
         private SemaphoreSlim _clientStateSemaphore;
+        private Socket _socketClient;
 
         public ConnectionsHandler()
         {
-            _serverIpAddress = IPAddress.Parse(ConfigurationManager.AppSettings["ServerIP"]);
-            _serverPort = Int32.Parse(ConfigurationManager.AppSettings["ServerPort"]);
-            _tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(ConfigurationManager.AppSettings["ClientIP"]), 
-                0));
             _state = ClientState.Down;
             _clientStateSemaphore = new SemaphoreSlim(1);
-            _protocol = new ProtocolHandler(_tcpClient);
+            
+            _serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ConfigurationManager.AppSettings["ServerIP"]), 
+                Int32.Parse(ConfigurationManager.AppSettings["ServerPort"]));
+            IPEndPoint clientIpEndPoint = new IPEndPoint(IPAddress.Parse(ConfigurationManager.AppSettings["ClientIP"]), 
+                0);
+            _socketClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            _socketClient.Bind(clientIpEndPoint);
+            _protocol = new ProtocolHandler(_socketClient);
         }
 
         public async Task ConnectAsync()
         {
             Console.WriteLine("Trying to connect to server");
-            await _tcpClient.ConnectAsync(_serverIpAddress, _serverPort);
+            await _socketClient.ConnectAsync(_serverIpEndPoint);
             await _clientStateSemaphore.WaitAsync();
             _state = ClientState.Up;
             _clientStateSemaphore.Release();
@@ -61,7 +63,8 @@ namespace Client
         {
             await _clientStateSemaphore.WaitAsync();
             _state = ClientState.ShutingDown;
-            _tcpClient.Close();
+            //_tcpClient.Close();
+            _socketClient.Shutdown(SocketShutdown.Both);
             _state = ClientState.Down;
             _clientStateSemaphore.Release();
         }

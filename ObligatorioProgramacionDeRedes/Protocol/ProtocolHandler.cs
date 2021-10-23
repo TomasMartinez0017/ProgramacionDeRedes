@@ -7,11 +7,11 @@ namespace Protocol
 {
     public class ProtocolHandler
     {
-        private TcpClient _tcpClient;
+        private Socket _socketClient;
 
-        public ProtocolHandler(TcpClient tcpClient)
+        public ProtocolHandler(Socket socketClient)
         {
-            _tcpClient = tcpClient;
+            _socketClient = socketClient;
         }
 
         public async Task SendAsync(Frame frame)
@@ -30,7 +30,7 @@ namespace Protocol
         
         private async Task SendAndDivideDataAsync(byte[] data, int slots)
         {
-            NetworkStream stream = _tcpClient.GetStream();
+            NetworkStream stream = new NetworkStream(_socketClient);
             int offset = 0;
             int currentSlot = 1;
             
@@ -75,7 +75,7 @@ namespace Protocol
 
         private async Task <byte[]> ReceiveDividedDataAsync(int fileLength, int slots)
         {
-            NetworkStream stream = _tcpClient.GetStream();
+            NetworkStream stream = new NetworkStream(_socketClient);
             byte[] buffer = new byte[fileLength];
             var offset = 0;
             var currentSlot = 1;
