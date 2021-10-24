@@ -32,15 +32,15 @@ namespace Server
 
         public async Task StartListeningAsync()
         {
-            _serverSocket.Listen(1);
+            _serverSocket.Listen(10);
             _serverState = ServerState.Up;
             
             while (IsServerUp())
             {
                 try
                 {
-                    Connection clientConnection = new Connection(_serverSocket.Accept());
-                    await clientConnection.StartConnectionAsync();
+                    Connection clientConnection = new Connection(await _serverSocket.AcceptAsync());
+                    clientConnection.StartConnectionAsync();
                     await AddConnectionAsync(clientConnection);
                     Console.WriteLine("Accepted new client connection");
                 }

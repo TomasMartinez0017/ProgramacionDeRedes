@@ -22,6 +22,7 @@ namespace Server
         private ProtocolHandler _protocol;
         private ResponseHandler _responseHandler;
         private SemaphoreSlim _connectionStateSempahore;
+        private SemaphoreSlim _receiveDataSemaphore;
 
         public Connection(Socket socketClient)
         {
@@ -31,6 +32,7 @@ namespace Server
             _responseHandler = new ResponseHandler();
             _userConnected = new User();
             _connectionStateSempahore = new SemaphoreSlim(1);
+            _receiveDataSemaphore = new SemaphoreSlim(1);
         }
 
         public async Task StartConnectionAsync()
@@ -44,7 +46,7 @@ namespace Server
 
         public async Task ShutDownAsync()
         {
-            _tcpClient.Close();
+            _socketClient.Shutdown(SocketShutdown.Both);
             ActiveUserRepository repository = ActiveUserRepository.GetInstance();
             await repository.DisconnectUserAsync(_userConnected);
             await _connectionStateSempahore.WaitAsync();
@@ -59,7 +61,7 @@ namespace Server
             {
                 ActiveUserRepository activeUserRepository = ActiveUserRepository.GetInstance();
                 List<User> usersConnected = await activeUserRepository.GetUsersAsync();
-
+                
                 Frame request = await _protocol.ReceiveAsync();
                 Frame response = await _responseHandler.GetResponseAsync(request, usersConnected, _userConnected);
 
