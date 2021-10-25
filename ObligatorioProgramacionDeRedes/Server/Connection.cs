@@ -16,13 +16,11 @@ namespace Server
     public class Connection
     {
         private User _userConnected;
-        private TcpClient _tcpClient;
         private Socket _socketClient;
         private ConnectionState _state;
         private ProtocolHandler _protocol;
         private ResponseHandler _responseHandler;
         private SemaphoreSlim _connectionStateSempahore;
-        private SemaphoreSlim _receiveDataSemaphore;
 
         public Connection(Socket socketClient)
         {
@@ -32,7 +30,6 @@ namespace Server
             _responseHandler = new ResponseHandler();
             _userConnected = new User();
             _connectionStateSempahore = new SemaphoreSlim(1);
-            _receiveDataSemaphore = new SemaphoreSlim(1);
         }
 
         public async Task StartConnectionAsync()
@@ -65,9 +62,9 @@ namespace Server
                 Frame request = await _protocol.ReceiveAsync();
                 Frame response = await _responseHandler.GetResponseAsync(request, usersConnected, _userConnected);
 
-                await ManageSignUp(request, response, activeUserRepository); //Debería ser un Async Task?
+                await ManageSignUp(request, response, activeUserRepository); 
 
-                await ManageLogIn(request, response, activeUserRepository); //Debería ser un Async Task?
+                await ManageLogIn(request, response, activeUserRepository);
 
                 await _protocol.SendAsync(response);
             }

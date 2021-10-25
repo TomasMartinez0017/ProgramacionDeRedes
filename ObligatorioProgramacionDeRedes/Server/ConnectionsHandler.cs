@@ -32,7 +32,7 @@ namespace Server
 
         public async Task StartListeningAsync()
         {
-            _serverSocket.Listen(10);
+            _serverSocket.Listen(1);
             _serverState = ServerState.Up;
             
             while (IsServerUp())

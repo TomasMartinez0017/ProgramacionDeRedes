@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Configuration;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Client.Connections;
@@ -14,7 +13,6 @@ namespace Client
     public class ConnectionsHandler
     {
         private IPEndPoint _serverIpEndPoint;
-
         private ProtocolHandler _protocol;
         private ClientState _state;
         private SemaphoreSlim _clientStateSemaphore;
@@ -63,7 +61,6 @@ namespace Client
         {
             await _clientStateSemaphore.WaitAsync();
             _state = ClientState.ShutingDown;
-            //_tcpClient.Close();
             _socketClient.Shutdown(SocketShutdown.Both);
             _state = ClientState.Down;
             _clientStateSemaphore.Release();
