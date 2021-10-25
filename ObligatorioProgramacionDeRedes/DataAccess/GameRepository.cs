@@ -93,13 +93,11 @@ namespace DataAccess
 
         public async Task UpdateGameAsync(string gameNameSearched, Game gameUpdated)
         {
-            await _gamesSemaphore.WaitAsync();
             Game gameToUpdate = await this.GetGameAsync(gameNameSearched);
             if(!string.IsNullOrEmpty(gameUpdated.Title)) gameToUpdate.Title = gameUpdated.Title;
             if(!string.IsNullOrEmpty(gameUpdated.Genre)) gameToUpdate.Genre = gameUpdated.Genre;
             if(!string.IsNullOrEmpty(gameUpdated.Rating)) gameToUpdate.Rating = gameUpdated.Rating;
             if (!string.IsNullOrEmpty(gameUpdated.Description)) gameToUpdate.Description = gameUpdated.Description;
-            _gamesSemaphore.Release();
         }
 
         public async Task<List<Game>> GetGamesWithGenreAsync(string genre)

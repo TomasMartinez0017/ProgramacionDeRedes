@@ -76,6 +76,7 @@ namespace Server
             catch (IOException e)
             {
                 Console.WriteLine("Server terminated connection to client");
+                throw;
             }
         }
 
