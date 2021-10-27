@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Configuration;
 using System.Text;
+using System.Threading.Tasks;
 using CustomExceptions;
 using DataAccess;
 using Domain;
@@ -180,54 +181,54 @@ namespace Protocol
             return ProcessListOfGames(data);
         }
 
-        public Frame GetResponse(Frame frame, List<User> usersConnected, User _userConnected)
+        public async Task<Frame> GetResponseAsync(Frame frame, List<User> usersConnected, User _userConnected)
         {
             Frame response = null;
 
             switch ((Command) frame.Command)
             {
                 case Command.ShowCatalog:
-                    response = CreateShowCatalogResponse(frame);
+                    response = await CreateShowCatalogResponseAsync(frame);
                     break;
                 case Command.PublishGame:
-                    response = CreatePublishGameResponse(frame);
+                    response = await CreatePublishGameResponseAsync(frame);
                     break;
                 case Command.SignUp:
-                    response = CreateSignUpResponse(frame);
+                    response = await CreateSignUpResponseAsync(frame);
                     break;
                 case Command.LogIn:
-                    response = CreateLogInResponse(frame, usersConnected);
+                    response = await CreateLogInResponseAsync(frame, usersConnected);
                     break;
                 case Command.UploadImage:
-                    response = CreateUploadImageResponse(frame);
+                    response = await CreateUploadImageResponseAsync(frame);
                     break;
                 case Command.CreateReview:
-                    response = CreateReviewResponse(frame, _userConnected);
+                    response = await CreateReviewResponseAsync(frame, _userConnected);
                     break;
                 case Command.BuyGame:
-                    response = CreateBuyGameResponse(frame, _userConnected);
+                    response = await CreateBuyGameResponseAsync(frame, _userConnected);
                     break;
                 case Command.ShowGameReviews:
-                    response = CreateShowGameReviewsResponse(frame);
+                    response = await CreateShowGameReviewsResponseAsync(frame);
                     break;
                 case Command.DeleteGame:
-                    response = CreateDeleteGameResponse(frame);
+                    response = await CreateDeleteGameResponseAsync(frame);
                     break;
                 case Command.UpdateGame:
-                    response = CreateUpdateGameResponse(frame);
+                    response = await CreateUpdateGameResponseAsync(frame);
                     break;
                 case Command.DownLoadImage:
-                    response = CreateDownloadGameCoverResponse(frame);
+                    response = await CreateDownloadGameCoverResponseAsync(frame);
                     break;
                 case Command.SearchGame:
-                    response = CreateSearchGameResponse(frame);
+                    response = await CreateSearchGameResponseAsync(frame);
                     break;
             }
 
             return response;
         }
 
-        private Frame CreatePublishGameResponse(Frame frame)
+        private async Task<Frame> CreatePublishGameResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.PublishGame);
@@ -239,9 +240,9 @@ namespace Protocol
                 
                 string message = null;
 
-                if (!repository.GameExists(newGame))
+                if (!await repository.GameExistsAsync(newGame))
                 {
-                    repository.AddGame(newGame);
+                    await repository.AddGameAsync(newGame);
                     message = "Game published.\n";
                 }
                 else
@@ -275,13 +276,13 @@ namespace Protocol
             return gameExtracted;
         }
 
-        private Frame CreateShowCatalogResponse(Frame frame)
+        private async Task<Frame> CreateShowCatalogResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.ShowCatalog);
             
             GameRepository repository = GameRepository.GetInstance();
-            List<Game> gamesInRepository = repository.GetAllGames();
+            List<Game> gamesInRepository = await repository.GetAllGamesAsync();
 
             if (gamesInRepository.Count != 0)
             {
@@ -333,7 +334,7 @@ namespace Protocol
             return dataToReturn.ToArray();
         }
 
-        private Frame CreateSignUpResponse(Frame frame)
+        private async Task<Frame> CreateSignUpResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.SignUp);
@@ -342,11 +343,11 @@ namespace Protocol
 
             UserRepository repository = UserRepository.GetInstance();
 
-            if (!repository.UserExists(username))
+            if (!await repository.UserExistsAsync(username))
             {
                 User userToAdd = new User();
                 userToAdd.Username = username;
-                repository.AddUser(userToAdd);
+                await repository.AddUserAsync(userToAdd);
                 
                 response.Data = frame.Data;
                 response.DataLength = response.Data.Length;
@@ -361,7 +362,7 @@ namespace Protocol
             return response;
         }
 
-        private Frame CreateLogInResponse(Frame frame, List<User> usersConnected)
+        private async Task<Frame> CreateLogInResponseAsync(Frame frame, List<User> usersConnected)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.LogIn);
@@ -376,7 +377,7 @@ namespace Protocol
                 response.Status = (int) FrameStatus.Error;
                 return response;
             }
-            if(repository.UserExists(username))
+            if(await repository.UserExistsAsync(username))
             {
                 response.Data = frame.Data;
                 response.DataLength = response.Data.Length;
@@ -403,7 +404,7 @@ namespace Protocol
             return false;
         }
 
-        private Frame CreateUploadImageResponse(Frame frame)
+        private async Task<Frame> CreateUploadImageResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.UploadImage);
@@ -423,7 +424,7 @@ namespace Protocol
             string imageName = imageInformationToString[1];
             
             GameRepository repository = GameRepository.GetInstance();
-            Game gameToUploadImage = repository.GetGame(gameName);
+            Game gameToUploadImage = await repository.GetGameAsync(gameName);
 
             if (gameToUploadImage == null)
             {
@@ -461,7 +462,7 @@ namespace Protocol
             return dataLength;
         }
 
-        private Frame CreateReviewResponse(Frame frame, User user)
+        private async Task<Frame> CreateReviewResponseAsync(Frame frame, User user)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.CreateReview);
@@ -484,7 +485,7 @@ namespace Protocol
                     review.User = user;
                     review.ValidReview();
                     GameRepository gameRepository = GameRepository.GetInstance();
-                    Game game = gameRepository.GetGame(gameName);
+                    Game game = await gameRepository.GetGameAsync(gameName);
                 
                     if (game == null)
                     {
@@ -495,7 +496,7 @@ namespace Protocol
                     {
                         review.Game = game;
                         ReviewRepository reviewRepository = ReviewRepository.GetInstance();
-                        reviewRepository.AddReview(review);
+                        await reviewRepository.AddReviewAsync(review);
                         message = "Review created successfully.\n";
                     }
 
@@ -522,7 +523,7 @@ namespace Protocol
             }
         }
 
-        private Frame CreateBuyGameResponse(Frame frame, User user)
+        private async Task<Frame> CreateBuyGameResponseAsync(Frame frame, User user)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.BuyGame);
@@ -534,9 +535,9 @@ namespace Protocol
                UserRepository userRepository = UserRepository.GetInstance();
                GameRepository gameRepository = GameRepository.GetInstance();
                
-               User userToAddGame = userRepository.GetUser(user.Username);
+               User userToAddGame = await userRepository.GetUserAsync(user.Username);
                string gameName = Encoding.UTF8.GetString(frame.Data);
-               Game gameThatUserWants = gameRepository.GetGame(gameName);
+               Game gameThatUserWants = await gameRepository.GetGameAsync(gameName);
                
                if (gameThatUserWants != null)
                {
@@ -572,7 +573,7 @@ namespace Protocol
             }
         }
 
-        private Frame CreateShowGameReviewsResponse(Frame frame)
+        private async Task<Frame> CreateShowGameReviewsResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.ShowGameReviews);;
@@ -582,11 +583,11 @@ namespace Protocol
             GameRepository gameRepository = GameRepository.GetInstance();
             ReviewRepository reviewRepository = ReviewRepository.GetInstance();
 
-            Game gameToShow = gameRepository.GetGame(gameName);
+            Game gameToShow = await gameRepository.GetGameAsync(gameName);
             
             if (gameToShow != null)
             {
-                List<Review> reviewsOfGame = reviewRepository.GetReviews(gameToShow);
+                List<Review> reviewsOfGame = await reviewRepository.GetReviewsAsync(gameToShow);
 
                 if (reviewsOfGame.Count != 0)
                 {
@@ -648,7 +649,7 @@ namespace Protocol
             return dataToReturn.ToArray();
         }
 
-        private Frame CreateDeleteGameResponse(Frame frame)
+        private async Task<Frame> CreateDeleteGameResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.DeleteGame);
@@ -663,11 +664,11 @@ namespace Protocol
             Game gameSearched = new Game();
             gameSearched.Title = gameName;
             
-            if (gameRepository.GameExists(gameSearched))
+            if (await gameRepository.GameExistsAsync(gameSearched))
             {
-                gameRepository.DeleteGame(gameName);
-                userRepository.DeleteBoughtGame(gameName);
-                reviewRepository.DeleteReview(gameName);
+                await gameRepository.DeleteGameAsync(gameName);
+                await userRepository.DeleteBoughtGameAsync(gameName);
+                await reviewRepository.DeleteReviewAsync(gameName);
                 
                 message = "Game deleted successfully.\n";
             }
@@ -681,7 +682,7 @@ namespace Protocol
             return response;
         }
         
-        private Frame CreateUpdateGameResponse(Frame frame)
+        private async Task<Frame> CreateUpdateGameResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.UpdateGame);
@@ -699,9 +700,9 @@ namespace Protocol
             gameUpdated.Rating = attributes[3];
             gameUpdated.Description = attributes[4];
             
-            if (gameRepository.GameExists(gameSearched))
+            if (await gameRepository.GameExistsAsync(gameSearched))
             {
-                gameRepository.UpdateGame(gameNameSearched, gameUpdated);
+                await gameRepository.UpdateGameAsync(gameNameSearched, gameUpdated);
                 message = "Game updated successfully.\n";
             }
             else
@@ -714,14 +715,14 @@ namespace Protocol
             return response;
         }
 
-        private Frame CreateDownloadGameCoverResponse(Frame frame)
+        private async Task<Frame> CreateDownloadGameCoverResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.DownLoadImage);
             string gameName = Encoding.UTF8.GetString(frame.Data);
             
             GameRepository gameRepository=GameRepository.GetInstance();
-            Game gameSearched = gameRepository.GetGame(gameName);
+            Game gameSearched = await gameRepository.GetGameAsync(gameName);
             
             if (gameSearched != null)
             {
@@ -757,7 +758,7 @@ namespace Protocol
             return response;
         }
 
-        private Frame CreateSearchGameResponse(Frame frame)
+        private async Task<Frame> CreateSearchGameResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.SearchGame);
@@ -774,9 +775,9 @@ namespace Protocol
             List<Game> joinedList = null;
             GameRepository gameRepository=GameRepository.GetInstance();
 
-            if (!string.IsNullOrEmpty(genre)) gamesWithGenre = gameRepository.GetGamesWithGenre(genre);
-            if (!string.IsNullOrEmpty(rating)) gamesWithRating = gameRepository.GetGamesWithRating(rating);
-            Game game = gameRepository.GetGame(gameName);
+            if (!string.IsNullOrEmpty(genre)) gamesWithGenre = await gameRepository.GetGamesWithGenreAsync(genre);
+            if (!string.IsNullOrEmpty(rating)) gamesWithRating = await gameRepository.GetGamesWithRatingAsync(rating);
+            Game game = await gameRepository.GetGameAsync(gameName);
 
             if (gamesWithGenre == null && gamesWithRating != null)
             {

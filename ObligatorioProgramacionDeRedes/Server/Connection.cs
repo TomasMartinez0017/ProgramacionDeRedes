@@ -4,6 +4,8 @@ using System.Data;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using CustomExceptions;
 using DataAccess;
 using Domain;
@@ -14,83 +16,88 @@ namespace Server
     public class Connection
     {
         private User _userConnected;
-        private TcpClient _tcpClient;
+        private Socket _socketClient;
         private ConnectionState _state;
         private ProtocolHandler _protocol;
         private ResponseHandler _responseHandler;
+        private SemaphoreSlim _connectionStateSempahore;
 
-        public Connection(TcpClient tcpClient)
+        public Connection(Socket socketClient)
         {
-            _tcpClient = tcpClient;
+            _socketClient = socketClient;
             _state = ConnectionState.Down;
-            _protocol = new ProtocolHandler(tcpClient);
+            _protocol = new ProtocolHandler(_socketClient);
             _responseHandler = new ResponseHandler();
             _userConnected = new User();
+            _connectionStateSempahore = new SemaphoreSlim(1);
         }
 
-        public void StartConnection()
+        public async Task StartConnectionAsync()
         {
             _state = ConnectionState.Up;
             while (_state == ConnectionState.Up)
             {
-                HandleRequests();
+               await HandleRequestsAsync();
             }
         }
 
-        public void ShutDown()
+        public async Task ShutDownAsync()
         {
-            _tcpClient.Close();
-            _state = ConnectionState.Down;
+            _socketClient.Shutdown(SocketShutdown.Both);
             ActiveUserRepository repository = ActiveUserRepository.GetInstance();
-            repository.DisconnectUser(_userConnected);
+            await repository.DisconnectUserAsync(_userConnected);
+            await _connectionStateSempahore.WaitAsync();
+            _state = ConnectionState.Down;
+            _connectionStateSempahore.Release();
             
         }
 
-        private void HandleRequests()
+        private async Task HandleRequestsAsync()
         {
             try
             {
                 ActiveUserRepository activeUserRepository = ActiveUserRepository.GetInstance();
-                List<User> usersConnected = activeUserRepository.GetUsers();
+                List<User> usersConnected = await activeUserRepository.GetUsersAsync();
+                
+                Frame request = await _protocol.ReceiveAsync();
+                Frame response = await _responseHandler.GetResponseAsync(request, usersConnected, _userConnected);
 
-                Frame request = _protocol.Receive();
-                Frame response = _responseHandler.GetResponse(request, usersConnected, _userConnected);
+                await ManageSignUp(request, response, activeUserRepository); 
 
-                ManageSignUp(request, response, activeUserRepository);
+                await ManageLogIn(request, response, activeUserRepository);
 
-                ManageLogIn(request, response, activeUserRepository);
-
-                _protocol.Send(response);
+                await _protocol.SendAsync(response);
             }
             catch (ClientExcpetion e)
             {
                 Console.WriteLine(e.Message);
-                ShutDown();
+                await ShutDownAsync();
             }
             catch (IOException e)
             {
                 Console.WriteLine("Server terminated connection to client");
+                throw;
             }
         }
 
-        private void ManageLogIn(Frame request, Frame response, ActiveUserRepository activeUserRepository)
+        private async Task ManageLogIn(Frame request, Frame response, ActiveUserRepository activeUserRepository)
         {
             if ((Command) request.Command == Command.LogIn && (FrameStatus) response.Status == FrameStatus.Ok)
             {
                 UserRepository userRepository = UserRepository.GetInstance();
-                _userConnected = userRepository.GetUser(Encoding.UTF8.GetString(response.Data));
-                activeUserRepository.AddUser(_userConnected);
+                _userConnected = await userRepository.GetUserAsync(Encoding.UTF8.GetString(response.Data));
+                await activeUserRepository.AddUserAsync(_userConnected);
                 response.Data = Encoding.UTF8.GetBytes("User logged in successfully. Welcome to VAPOR SYSTEM");
                 response.DataLength = response.Data.Length;
             }
         }
 
-        private void ManageSignUp(Frame request, Frame response, ActiveUserRepository activeUserRepository)
+        private async Task ManageSignUp(Frame request, Frame response, ActiveUserRepository activeUserRepository)
         {
             if ((Command) request.Command == Command.SignUp && (FrameStatus) response.Status == FrameStatus.Ok)
             {
                 _userConnected.Username = Encoding.UTF8.GetString(response.Data);
-                activeUserRepository.AddUser(_userConnected);
+                await activeUserRepository.AddUserAsync(_userConnected);
                 response.Data = Encoding.UTF8.GetBytes("User created successfully. Welcome to VAPOR SYSTEM");
                 response.DataLength = response.Data.Length;
             }
