@@ -2,6 +2,7 @@
 using Domain;
 using System.Collections.Specialized;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Client.Connections;
 using DataAccess;
 using Protocol;
@@ -21,9 +22,9 @@ namespace Client
             _responseHandler = new ResponseHandler();
         }
 
-        public void StartClient()
+        public async Task StartClient()
         {
-            _connectionsHandler.Connect();
+            await _connectionsHandler.ConnectAsync();
             Console.WriteLine("Connection to Server Started");
 
             while (_connectionsHandler.IsClientStateUp())
@@ -32,12 +33,12 @@ namespace Client
 
                 if (option == -1)
                 {
-                    _connectionsHandler.ShutDown();
+                    await _connectionsHandler.ShutDownAsync();
                 }
                 else 
                 {
                     Frame request = _requestHandler.BuildRequest(option);
-                    Frame response = _connectionsHandler.SendRequestAndGetResponse(request);
+                    Frame response = await _connectionsHandler.SendRequestAndGetResponse(request);
                     if (response != null)
                     {
                         string data = _responseHandler.ProcessResponse(response);
@@ -45,7 +46,7 @@ namespace Client
                     }
                     else
                     {
-                        _connectionsHandler.ShutDown();
+                        await _connectionsHandler.ShutDownAsync();
                     }
                 }
             }

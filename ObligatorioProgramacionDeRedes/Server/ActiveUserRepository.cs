@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Domain;
 using DataAccess;
 
@@ -9,66 +11,67 @@ namespace Server
     public class ActiveUserRepository
     {
         private readonly List<User> _activeUsers;
-        private object _activeUsersLocker;
         private static ActiveUserRepository _instance;
-        private static Object _instanceLocker = new Object();
+        private readonly SemaphoreSlim _activeUsersSemaphore;
+        private static readonly SemaphoreSlim _instanceSemaphore = new SemaphoreSlim(1);
 
         private ActiveUserRepository()
         {
             _activeUsers = new List<User>();
-            _activeUsersLocker = new Object();
+            _activeUsersSemaphore = new SemaphoreSlim(1);
         }
 
         public static ActiveUserRepository GetInstance()
         {
-            lock (_instanceLocker)
+            _instanceSemaphore.Wait();
+            
+            if (_instance == null)
             {
-                if (_instance == null)
-                {
-                    _instance = new ActiveUserRepository();
-                }
-
-                return _instance;
+                _instance = new ActiveUserRepository();
             }
+            
+            _instanceSemaphore.Release();
+
+            return _instance;
         }
         
-        public void AddUser(User user)
+        public async Task AddUserAsync(User user)
         {
-            lock (_activeUsersLocker)
-            {
-                this._activeUsers.Add(user);    
-            }
+            await _activeUsersSemaphore.WaitAsync();
+            this._activeUsers.Add(user);
+            _activeUsersSemaphore.Release();
         }
 
-        public List<User> GetUsers()
+        public async Task <List<User>> GetUsersAsync()
         {
-            lock (_activeUsersLocker)
-            {
-                List<User> copy = new List<User>(_activeUsers);
-                return copy;
-            }
+            await _activeUsersSemaphore.WaitAsync();
+            List<User> copy = new List<User>(_activeUsers);
+            _activeUsersSemaphore.Release();
+            return copy;
         }
 
-        public void DisconnectAlUsers()
+        /*public void DisconnectAlUsers()
         {
             lock (_activeUsersLocker)
             {
                 this._activeUsers.Clear();
             }
-        }
+        }*/
 
-        public void DisconnectUser(User userToDisconnect)
+        public async Task DisconnectUserAsync(User userToDisconnect)
         {
-            lock (_activeUsersLocker)
+            await _activeUsersSemaphore.WaitAsync();
+            
+            for (int i = 0; i < _activeUsers.Count; i++)  
             {
-                for (int i = 0; i < _activeUsers.Count; i++)  
+                if (_activeUsers.ElementAt(i).Username.Equals(userToDisconnect.Username))
                 {
-                    if (_activeUsers.ElementAt(i).Username.Equals(userToDisconnect.Username))
-                    {
-                        _activeUsers.Remove(_activeUsers.ElementAt(i));
-                    }
+                    _activeUsers.Remove(_activeUsers.ElementAt(i));
                 }
             }
+
+            _activeUsersSemaphore.Release();
+
         }
     }
 }    
