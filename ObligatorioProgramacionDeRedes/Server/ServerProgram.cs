@@ -16,13 +16,13 @@ namespace Server
 
         static async Task HandleConnections()
         {
-        
+            /*
             ConnectionsHandler connectionsHandler = new ConnectionsHandler();
             await connectionsHandler.StartListeningAsync();
             Console.WriteLine("Press any key to shut down the server");
             Console.ReadLine();
             await connectionsHandler.StartShutServerDownAsync();
-
+            */
         }
     }
 }
