@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Domain;
 using DataAccess;
 
-namespace Server
+namespace NewServer
 {
     public class ActiveUserRepository
     {

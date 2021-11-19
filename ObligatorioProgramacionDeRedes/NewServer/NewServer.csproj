@@ -5,7 +5,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Protobuf Include="Protos\greet.proto" GrpcServices="Server" />
+      <None Remove="Protos\games.proto" />
+      <None Remove="Protos\users.proto" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Include="Protos\games.proto" GrpcServices="Server" />
+        <Protobuf Include="Protos\users.proto" GrpcServices="Server" />
+      
     </ItemGroup>
 
     <ItemGroup>
@@ -13,6 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
       <ProjectReference Include="..\Protocol\Protocol.csproj" />
     </ItemGroup>
 

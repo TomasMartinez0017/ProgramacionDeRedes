@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option csharp_namespace = "NewServer";
+
+package user;
+
+service UserAdmin {
+  
+  rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
+
+  rpc UpdateUser (UpdateUserRequest) returns (UpdateUserResponse);
+
+  rpc DeleteUser (DeleteUserRequest) returns (DeleteUserResponse);
+}
+
+message CreateUserRequest {
+  string name = 1;
+}
+
+message CreateUserResponse {
+  string message = 1;
+  bool ok=2;
+}
+
+message UpdateUserRequest {
+  string name = 1;
+}
+
+message UpdateUserResponse {
+  string message = 1;
+}
+
+message DeleteUserRequest {
+  string name = 1;
+}
+
+message DeleteUserResponse {
+  string message = 1;
+}
+

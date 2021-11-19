@@ -7,7 +7,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Server
+namespace NewServer
 {
     public class ConnectionsHandler
     {
@@ -17,7 +17,7 @@ namespace Server
         private SemaphoreSlim _serverStateSemaphore;
         private Socket _serverSocket;
 
-        public ConnectionsHandler()
+        public ConnectionsHandler(ServerConfiguration configuration)
         {
             _connections = new List<Connection>();
             _serverState = ServerState.Down;
@@ -25,8 +25,8 @@ namespace Server
             _connectionsListSemaphore = new SemaphoreSlim(1);
 
             _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ConfigurationManager.AppSettings["ServerIP"]), 
-                Int32.Parse(ConfigurationManager.AppSettings["ServerPort"]));
+            IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(configuration.ServerIP), 
+                Int32.Parse(configuration.ServerPort));
             _serverSocket.Bind(serverIpEndPoint);
         }
 

@@ -1,32 +1,39 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{55350C05-2535-465D-9F6A-A9431EFDCFFB}"
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31613.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{55350C05-2535-465D-9F6A-A9431EFDCFFB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{D0102608-8DE8-4F88-97BA-7CD1AC0E5E17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "Client\Client.csproj", "{D0102608-8DE8-4F88-97BA-7CD1AC0E5E17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{88C7DDA5-4FB8-4142-8365-AB3027986B8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server\Server.csproj", "{88C7DDA5-4FB8-4142-8365-AB3027986B8B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Protocol", "Protocol\Protocol.csproj", "{5D51A8CB-EEA2-434A-AF81-47143B6409B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protocol", "Protocol\Protocol.csproj", "{5D51A8CB-EEA2-434A-AF81-47143B6409B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{08476D90-835D-45B7-82DF-D5437ACB4F2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataAccess", "DataAccess\DataAccess.csproj", "{08476D90-835D-45B7-82DF-D5437ACB4F2A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomExceptions", "CustomExceptions\CustomExceptions.csproj", "{6DAC8535-B15A-4884-8039-A4015CCD7B4A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CustomExceptions", "CustomExceptions\CustomExceptions.csproj", "{6DAC8535-B15A-4884-8039-A4015CCD7B4A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "New Server", "New Server", "{1FB7C26C-95A5-4E2C-B0D3-E0D1BE6109A2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NewServer", "NewServer\NewServer.csproj", "{9B7DA4C7-CA20-47DF-B925-A2D22E143E76}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewServer", "NewServer\NewServer.csproj", "{9B7DA4C7-CA20-47DF-B925-A2D22E143E76}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{C20D20AF-056B-4B08-AD4A-65FFC577164C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LogsServer", "LogsServer", "{B90F8875-6C09-4960-BEF7-260B117AC3E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogsServer", "LogsServer\LogsServer\LogsServer.csproj", "{3C7723E8-A470-4E9D-BD91-32C355819018}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogsServer", "LogsServer\LogsServer\LogsServer.csproj", "{3C7723E8-A470-4E9D-BD91-32C355819018}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogsServer.DataAccess", "LogsServer\LogsServer.DataAccess\LogsServer.DataAccess.csproj", "{5E01C0AE-B116-43EE-9886-3DC96479CA45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogsServer.DataAccess", "LogsServer\LogsServer.DataAccess\LogsServer.DataAccess.csproj", "{5E01C0AE-B116-43EE-9886-3DC96479CA45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogsServer.Domain", "LogsServer\LogsServer.Domain\LogsServer.Domain.csproj", "{71ABD8C8-A4EB-404F-ACF7-C9F8CA663748}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogsServer.Domain", "LogsServer\LogsServer.Domain\LogsServer.Domain.csproj", "{71ABD8C8-A4EB-404F-ACF7-C9F8CA663748}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogsServer.BussinessLogic", "LogsServer\LogsServer.BussinessLogic\LogsServer.BussinessLogic.csproj", "{A6A7E05A-E862-4A68-B8CF-0D009542290F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogsServer.BussinessLogic", "LogsServer\LogsServer.BussinessLogic\LogsServer.BussinessLogic.csproj", "{A6A7E05A-E862-4A68-B8CF-0D009542290F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdminServer", "AdminServer", "{B2AEE436-B245-4AC9-B129-7392AAB4C97B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminServer", "AdminServer\AdminServer.csproj", "{D72F30AD-D153-42EA-8F85-46CE03219F59}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -78,14 +85,25 @@ Global
 		{A6A7E05A-E862-4A68-B8CF-0D009542290F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A6A7E05A-E862-4A68-B8CF-0D009542290F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A6A7E05A-E862-4A68-B8CF-0D009542290F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D72F30AD-D153-42EA-8F85-46CE03219F59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D72F30AD-D153-42EA-8F85-46CE03219F59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D72F30AD-D153-42EA-8F85-46CE03219F59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D72F30AD-D153-42EA-8F85-46CE03219F59}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{9B7DA4C7-CA20-47DF-B925-A2D22E143E76} = {1FB7C26C-95A5-4E2C-B0D3-E0D1BE6109A2}
 		{5D51A8CB-EEA2-434A-AF81-47143B6409B2} = {C20D20AF-056B-4B08-AD4A-65FFC577164C}
 		{6DAC8535-B15A-4884-8039-A4015CCD7B4A} = {C20D20AF-056B-4B08-AD4A-65FFC577164C}
+		{9B7DA4C7-CA20-47DF-B925-A2D22E143E76} = {1FB7C26C-95A5-4E2C-B0D3-E0D1BE6109A2}
 		{3C7723E8-A470-4E9D-BD91-32C355819018} = {B90F8875-6C09-4960-BEF7-260B117AC3E6}
 		{5E01C0AE-B116-43EE-9886-3DC96479CA45} = {B90F8875-6C09-4960-BEF7-260B117AC3E6}
 		{71ABD8C8-A4EB-404F-ACF7-C9F8CA663748} = {B90F8875-6C09-4960-BEF7-260B117AC3E6}
 		{A6A7E05A-E862-4A68-B8CF-0D009542290F} = {B90F8875-6C09-4960-BEF7-260B117AC3E6}
+		{D72F30AD-D153-42EA-8F85-46CE03219F59} = {B2AEE436-B245-4AC9-B129-7392AAB4C97B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {34E241E6-1749-4E86-A5D4-150EA3D40A1F}
 	EndGlobalSection
 EndGlobal

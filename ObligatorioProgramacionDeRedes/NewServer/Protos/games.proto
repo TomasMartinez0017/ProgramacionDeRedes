@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option csharp_namespace = "NewServer";
+
+package game;
+
+service GameAdmin {
+  
+  rpc CreateGame (CreateGameRequest) returns (CreateGameResponse);
+
+  rpc UpdateGame (UpdateGameRequest) returns (UpdateGameResponse);
+
+  rpc DeleteGame (DeleteGameRequest) returns (DeleteGameResponse);
+}
+
+message CreateGameRequest {
+  string title = 1;
+  string Genre=2;
+  string Rating=3;
+  string Description=4;
+
+}
+
+message CreateGameResponse {
+  string message = 1;
+}
+
+message UpdateGameRequest {
+  string title = 1;
+  string Genre=2;
+  string Rating=3;
+  string Description=4;
+}
+
+message UpdateGameResponse {
+  string message = 1;
+}
+
+message DeleteGameRequest {
+  string title = 1;
+}
+
+message DeleteGameResponse {
+  string message = 1;
+}

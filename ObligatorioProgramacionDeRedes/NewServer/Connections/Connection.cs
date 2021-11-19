@@ -11,7 +11,7 @@ using DataAccess;
 using Domain;
 using Protocol;
 
-namespace Server
+namespace NewServer
 {
     public class Connection
     {

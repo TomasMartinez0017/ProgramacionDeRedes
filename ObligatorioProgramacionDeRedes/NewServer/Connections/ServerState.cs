@@ -1,4 +1,4 @@
-﻿namespace Server
+﻿namespace NewServer
 {
     public enum ServerState
     {
