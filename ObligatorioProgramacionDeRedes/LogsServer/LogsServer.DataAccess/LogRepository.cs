@@ -7,7 +7,7 @@ using LogsServer.Domain;
 
 namespace LogsServer.DataAccess
 {
-    public class LogRepository: ILogRepository
+    public class LogRepository
     {
         private List<Log> _logs;
         private readonly SemaphoreSlim _logsSemaphore;

@@ -13,7 +13,27 @@ namespace LogsServer
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine("Logs server is starting...");
+            IConfigurationRoot config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false)
+                .Build();
+            LogServerConfiguration logsServerConfiguration = new LogServerConfiguration()
+            {
+                RabbitMQServerIP = config.GetSection("LogsServerConfiguration").GetSection("RabbitMQServerIP").Value,
+                RabbitMQServerPort = config.GetSection("LogsServerConfiguration").GetSection("RabbitMQServerPort").Value,
+                LogsQueueName = config.GetSection("LogsServerConfiguration").GetSection("LogsQueueName").Value,
+                WebApiHttpPort = config.GetSection("LogsServerConfiguration").GetSection("WebApiHttpPort").Value,
+                WebApiHttpsPort = config.GetSection("LogsServerConfiguration").GetSection("WebApiHttpsPort").Value,
+            };
+            
+            SetupLogListener(logsServerConfiguration);
             CreateHostBuilder(args).Build().Run();
+        }
+        
+        public static void SetupLogListener(LogServerConfiguration configuration)
+        {
+            //LogReceiver logReceiver = new LogReceiver(configuration);
+            //logReceiver.ReceiveServerLogs();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
