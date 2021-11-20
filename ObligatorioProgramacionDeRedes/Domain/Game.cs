@@ -64,6 +64,11 @@ namespace Domain
 
             return rating;
         }
+        
+        public override bool Equals(object? obj)
+        {
+            return this.Title == ((Game)obj).Title;
+        }
 
     }
 }

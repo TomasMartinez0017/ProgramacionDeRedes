@@ -42,20 +42,54 @@ namespace NewServer.Services
             return userResponse;
         }
 
-        public override Task<UpdateUserResponse> UpdateUser(UpdateUserRequest request, ServerCallContext context)
+        public override async Task<UpdateUserResponse> UpdateUser(UpdateUserRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new UpdateUserResponse
+            Frame requestFrame = new Frame();
+            byte[] userData = Encoding.UTF8.GetBytes(request.Name + "#" + request.NewName);
+            requestFrame.Data = userData;
+            requestFrame.DataLength = userData.Length;
+
+            Frame response = await userManager.UpdateUserAsync(requestFrame);
+
+            UpdateUserResponse userResponse = new UpdateUserResponse();
+
+            if (response.Status == 0)
             {
-                Message = "updated"
-            });
+                userResponse.Ok = true;
+                userResponse.Message = "User Updated";
+            }
+            else
+            {
+                userResponse.Ok = false;
+                userResponse.Message = "Error updating user";
+            }
+
+            return userResponse;
         }
 
-        public override Task<DeleteUserResponse> DeleteUser(DeleteUserRequest request, ServerCallContext context)
+        public override async Task<DeleteUserResponse> DeleteUser(DeleteUserRequest request, ServerCallContext context)
         {
-            return Task.FromResult(new DeleteUserResponse
+            Frame requestFrame = new Frame();
+            byte[] userData = Encoding.UTF8.GetBytes(request.Name);
+            requestFrame.Data = userData;
+            requestFrame.DataLength = userData.Length;
+
+            Frame response = await userManager.DeleteUserAsync(requestFrame);
+
+            DeleteUserResponse userResponse = new DeleteUserResponse();
+            
+            if (response.Status == 0)
             {
-                Message = "deleted"
-            });
+                userResponse.Ok = true;
+                userResponse.Message = "User Deleted";
+            }
+            else
+            {
+                userResponse.Ok = false;
+                userResponse.Message = "Error deleting user";
+            }
+
+            return userResponse;
         }
     }
 }

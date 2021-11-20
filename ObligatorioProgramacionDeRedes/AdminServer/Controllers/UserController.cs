@@ -35,9 +35,52 @@ namespace AdminServer.Controllers
             }
             else
             {
-                return BadRequest();
-            }       
-        } 
+                return BadRequest(response.Message);
+            }
+        }
+
+        [HttpPut("{originalUserName}")]
+        public async Task<IActionResult> UpdateUser([FromBody] string newName, string originalUserName)
+        {
+            UpdateUserRequest request = new UpdateUserRequest()
+            {
+                Name = originalUserName,
+                NewName = newName
+
+            };
+
+            UpdateUserResponse response = await userClient.UpdateUserAsync(request);
+            if (response.Ok)
+            {
+                return Ok(response.Message);
+            }
+            else
+            {
+                return BadRequest(response.Message);
+            }
+        }
+
+        [HttpDelete("{userName}")]
+        public async Task<IActionResult> DeleteUser(string userName)
+        {
+            DeleteUserRequest request = new DeleteUserRequest()
+            {
+                Name = userName
+            };
+
+            DeleteUserResponse response = await userClient.DeleteUserAsync(request);
+            
+            if (response.Ok)
+            {
+                return Ok(response.Message);
+            }
+            else
+            {
+                return BadRequest(response.Message);
+            }
+            
+        }
+
 
 
 

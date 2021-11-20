@@ -27,5 +27,10 @@ namespace Domain
             return false;
         }
         
+        public override bool Equals(object? obj)
+        {
+            return this.Username == ((User)obj).Username;
+        }
+        
     }
 }

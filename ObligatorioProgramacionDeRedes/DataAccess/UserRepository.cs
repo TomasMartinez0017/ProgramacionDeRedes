@@ -39,6 +39,26 @@ namespace DataAccess
             _usersSemaphore.Release();
         }
 
+        public async Task DeleteUserAsync(User userToDelete)
+        {
+            await _usersSemaphore.WaitAsync();
+            this._users.Remove(userToDelete);
+            _usersSemaphore.Release();
+        }
+
+        public async Task UpdateUserAsync(string userName, string newUserName)
+        {
+            await _usersSemaphore.WaitAsync();
+            foreach (User user in _users)
+            {
+                if (user.Username.Equals(userName))
+                {
+                    user.Username = newUserName;
+                }
+            }
+            _usersSemaphore.Release();
+        }
+
         public async Task <User> GetUserAsync(string username)
         {
             await _usersSemaphore.WaitAsync();

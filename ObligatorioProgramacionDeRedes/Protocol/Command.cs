@@ -13,7 +13,9 @@
         UploadImage,
         DownLoadImage,
         SignUp,
-        LogIn
-
+        LogIn,
+        UpdateUser,
+        DeleteUser,
+        ShowGame
     }
 }

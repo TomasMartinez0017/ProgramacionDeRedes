@@ -24,10 +24,12 @@ message CreateUserResponse {
 
 message UpdateUserRequest {
   string name = 1;
+  string NewName = 2;
 }
 
 message UpdateUserResponse {
   string message = 1;
+  bool ok=2;
 }
 
 message DeleteUserRequest {
@@ -36,5 +38,6 @@ message DeleteUserRequest {
 
 message DeleteUserResponse {
   string message = 1;
+  bool ok = 2;
 }
 

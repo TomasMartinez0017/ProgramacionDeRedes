@@ -11,6 +11,42 @@ service GameAdmin {
   rpc UpdateGame (UpdateGameRequest) returns (UpdateGameResponse);
 
   rpc DeleteGame (DeleteGameRequest) returns (DeleteGameResponse);
+
+  rpc ShowGame (ShowGameRequest) returns (ShowGameResponse);
+  
+  rpc GameAssociation(GameAssociationRequest) returns (AssociateGameResponse);
+  
+  rpc GameDissociation(GameAssociationRequest) returns (DissociationGameResponse);
+}
+
+message GameAssociationRequest{
+  string title=1;
+  string username=2;
+}
+
+message AssociateGameResponse{
+  string message=1;
+  bool ok=2;
+}
+
+message  DissociationGameResponse{
+  string message=1;
+  bool ok=2;
+}
+
+message ShowGameRequest{
+	string name = 1;
+}
+
+message ShowGameResponse{
+  string title = 1;
+  string Genre=2;
+  string Rating=3;
+  string Description=4;
+  string image = 5;
+  bool ok= 6;
+  string message = 7;
+
 }
 
 message CreateGameRequest {
@@ -23,17 +59,20 @@ message CreateGameRequest {
 
 message CreateGameResponse {
   string message = 1;
+  bool ok = 3;
 }
 
 message UpdateGameRequest {
-  string title = 1;
-  string Genre=2;
-  string Rating=3;
-  string Description=4;
+  string oldTitle=1;
+  string title = 2;
+  string Genre=3;
+  string Rating=4;
+  string Description=5;
 }
 
 message UpdateGameResponse {
   string message = 1;
+  bool ok=2;
 }
 
 message DeleteGameRequest {
@@ -42,4 +81,5 @@ message DeleteGameRequest {
 
 message DeleteGameResponse {
   string message = 1;
+  bool ok=2;
 }

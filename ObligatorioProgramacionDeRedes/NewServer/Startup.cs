@@ -65,6 +65,7 @@ namespace NewServer
 
             services.AddScoped<ServerConfiguration>(s => serverConfiguration);
             services.AddScoped<UserManager, UserManager>();
+            services.AddScoped<GameManager, GameManager>();
 
             //services.AddScoped<LogEmitter, LogEmitter>();
             //services.AddScoped<BaseMapper, BaseMapper>();

@@ -228,7 +228,7 @@ namespace Protocol
             return response;
         }
 
-        private async Task<Frame> CreatePublishGameResponseAsync(Frame frame)
+        public async Task<Frame> CreatePublishGameResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.PublishGame);
@@ -523,7 +523,7 @@ namespace Protocol
             }
         }
 
-        private async Task<Frame> CreateBuyGameResponseAsync(Frame frame, User user)
+        public async Task<Frame> CreateBuyGameResponseAsync(Frame frame, User user)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.BuyGame);
@@ -545,18 +545,18 @@ namespace Protocol
                    {
                        userToAddGame.Games.Add(gameThatUserWants);
                        message = "Game added to your library.\n";
-                       frame.Status = (int) FrameStatus.Error;
+                       response.Status = (int) FrameStatus.Ok;
                    }
                    else
                    {
                        message = $"ERROR: User already has this game: {gameName}.\n";
-                       frame.Status = (int) FrameStatus.Error;
+                       response.Status = (int) FrameStatus.Error;
                    }
                }
                else
                {
                    message = "ERROR: Game not found.\n";
-                   frame.Status = (int) FrameStatus.Error;
+                   response.Status = (int) FrameStatus.Error;
                }
                 
                response.Data = Encoding.UTF8.GetBytes(message);
@@ -649,7 +649,7 @@ namespace Protocol
             return dataToReturn.ToArray();
         }
 
-        private async Task<Frame> CreateDeleteGameResponseAsync(Frame frame)
+        public async Task<Frame> CreateDeleteGameResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.DeleteGame);
@@ -675,6 +675,7 @@ namespace Protocol
             else
             {
                 message = "ERROR: Could not find game.\n";
+                response.Status = (int) FrameStatus.Error;
             }
 
             response.Data = Encoding.UTF8.GetBytes(message);
@@ -682,7 +683,7 @@ namespace Protocol
             return response;
         }
         
-        private async Task<Frame> CreateUpdateGameResponseAsync(Frame frame)
+        public async Task<Frame> CreateUpdateGameResponseAsync(Frame frame)
         {
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.UpdateGame);
