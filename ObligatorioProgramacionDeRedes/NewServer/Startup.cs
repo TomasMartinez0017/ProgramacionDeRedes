@@ -66,15 +66,6 @@ namespace NewServer
             services.AddScoped<ServerConfiguration>(s => serverConfiguration);
             services.AddScoped<UserManager, UserManager>();
             services.AddScoped<GameManager, GameManager>();
-
-            //services.AddScoped<LogEmitter, LogEmitter>();
-            //services.AddScoped<BaseMapper, BaseMapper>();
-            //services.AddScoped<PostMapper, PostMapper>();
-            //services.AddScoped<ThemeMapper, ThemeMapper>();
-            //services.AddScoped<IThemeManager, ThemeManager>();
-            //services.AddScoped<IDeserializer, Deserializer>();
-            //services.AddScoped<IPostManager, PostManager>();
-            //services.AddScoped<IUserRepository>(u => UserRepository.GetInstance());
         }
     }
 }

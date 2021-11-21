@@ -39,7 +39,6 @@ namespace LogsServer
                 Log processedLog = _logProcessor.ProcessLog(message);
 
                 await _logRepository.StoreAsync(processedLog);
-                //Console.WriteLine(processedLog.ToString());
             };
 
             _channel.BasicConsume(_queueName, true, consumer);
