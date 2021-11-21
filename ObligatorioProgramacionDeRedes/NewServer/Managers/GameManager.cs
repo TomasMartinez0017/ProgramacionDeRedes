@@ -149,7 +149,7 @@ namespace NewServer.Managers
                 response.Status = (int)FrameStatus.Error;
             }
 
-             emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameName, message)), LogTag.ShowGame);
+             emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("Not a user related operation", gameName, message)), LogTag.ShowGame);
 
             return response;
 

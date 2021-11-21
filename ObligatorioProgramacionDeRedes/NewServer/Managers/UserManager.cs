@@ -57,7 +57,7 @@ namespace NewServer.Managers
                
             }
 
-            _emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(names[0], "", message)), LogTag.UpdateUser);
+            _emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(names[0], "Not a game related operation", message)), LogTag.UpdateUser);
 
             return response;
         }
@@ -88,7 +88,7 @@ namespace NewServer.Managers
                 response.DataLength = response.Data.Length;
             }
 
-            _emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(username, "", message)), LogTag.DeleteUser);
+            _emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(username, "Not a game related operation", message)), LogTag.DeleteUser);
 
             return response;
             

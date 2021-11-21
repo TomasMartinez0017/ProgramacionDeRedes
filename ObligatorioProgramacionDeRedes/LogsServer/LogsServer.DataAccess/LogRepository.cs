@@ -37,6 +37,17 @@ namespace LogsServer.DataAccess
             _logsSemaphore.Release();
         }
 
+        public async Task<List<Log>> GetLogs()
+        {
+            await _logsSemaphore.WaitAsync();
+            List<Log> listToReturn = new List<Log>();
+            foreach(Log log in this._logs){
+                listToReturn.Add(log);
+            }
+            _logsSemaphore.Release();
+            return listToReturn;
+        }
+
         public async Task<List<Log>> GetLogsByUser(string username){
             await _logsSemaphore.WaitAsync();
             List<Log> listToReturn = new List<Log>();

@@ -259,7 +259,7 @@ namespace Protocol
 
                 response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
-                emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", newGame.Title, message)), LogTag.PublishGame);
+                emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("Not a user related operation", newGame.Title, message)), LogTag.PublishGame);
                 return response;
             }
             catch (InvalidGameException e)
@@ -309,7 +309,7 @@ namespace Protocol
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
             }
-            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("","", message)), LogTag.ShowCatalog);
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("Not a user related operation","Not a game related operation", message)), LogTag.ShowCatalog);
             return response;
         }
 
@@ -374,7 +374,7 @@ namespace Protocol
                 response.DataLength = response.Data.Length;
             }
 
-            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(username,"", message)), LogTag.SignUp);
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(username,"Not a game related operation", message)), LogTag.SignUp);
             return response;
         }
 
@@ -410,7 +410,7 @@ namespace Protocol
                 response.Status = (int) FrameStatus.Error;
             }
 
-            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(username,"", message)), LogTag.LogIn);
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(username,"Not a game related operation", message)), LogTag.LogIn);
             return response;
         }
 
@@ -468,7 +468,7 @@ namespace Protocol
                 response.DataLength = response.Data.Length;
             }
 
-            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameName, message)), LogTag.UploadImage);
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("Not a user related operation", gameName, message)), LogTag.UploadImage);
             return response;
         }
 
@@ -654,7 +654,7 @@ namespace Protocol
                 response.Status = (int) FrameStatus.Error;
             }
 
-            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameName, message)), LogTag.ShowGameReviews);
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("Not a user related operation", gameName, message)), LogTag.ShowGameReviews);
 
             return response;
 
@@ -724,7 +724,7 @@ namespace Protocol
 
             response.Data = Encoding.UTF8.GetBytes(message);
             response.DataLength = response.Data.Length;
-            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameName, message)), LogTag.DeleteGame);
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("Not a user related operation", gameName, message)), LogTag.DeleteGame);
 
             return response;
         }
@@ -759,7 +759,7 @@ namespace Protocol
 
             response.Data = Encoding.UTF8.GetBytes(message);
             response.DataLength = response.Data.Length;
-            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameSearched.Title, message)), LogTag.UpdateGame);
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("Not a user related operation", gameSearched.Title, message)), LogTag.UpdateGame);
 
             return response;
         }
@@ -809,7 +809,7 @@ namespace Protocol
                 response.Status = (int) FrameStatus.Error;
             }
 
-            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameName, message)), LogTag.UploadImage);
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("Not a user related operation", gameName, message)), LogTag.UploadImage);
             
             return response;
         }
@@ -870,7 +870,7 @@ namespace Protocol
             byte[] serializedList = SerializeListOfGames(serializedGames);
             response.Data = serializedList;
             response.DataLength = response.Data.Length;
-            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(gameName, "", "Search operation completed")), LogTag.SearchGame);
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("Not a user related operation",gameName, "Search operation completed")), LogTag.SearchGame);
 
             return response;
         }

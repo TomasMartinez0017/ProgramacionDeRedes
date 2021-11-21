@@ -9,6 +9,11 @@ namespace LogsServer.BussinessLogic
 {
     public class LogLogic
     {
+        public async Task<List<Log>> GetAllLogs(){
+            LogRepository repository = LogRepository.GetInstance();
+            return await repository.GetLogs();
+        }
+        
         public async Task<List<Log>> GetLogsByUsername(string username){
             LogRepository repository = LogRepository.GetInstance();
             return await repository.GetLogsByUser(username);

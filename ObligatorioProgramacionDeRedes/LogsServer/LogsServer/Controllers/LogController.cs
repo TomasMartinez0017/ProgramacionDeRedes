@@ -19,6 +19,13 @@ namespace LogsServer.Controllers
             this._logLogic = logic;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllLogs()
+        {
+            List<Log> logs = await this._logLogic.GetAllLogs();
+            return Ok(logs);
+        }
+
         [HttpGet("users/{userName}")]
         public async Task<IActionResult> GetLogsByUser(string userName)
         {
