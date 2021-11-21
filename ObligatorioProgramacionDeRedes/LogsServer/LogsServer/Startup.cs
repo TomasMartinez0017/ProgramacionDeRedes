@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LogsServer.BussinessLogic;
+using LogsServer.DataAccess;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -47,9 +49,8 @@ namespace LogsServer
         
         private void RegisterServices(IServiceCollection services)
         {
-            //services.AddScoped<ILogRepository>(u => LogRepository.GetInstance());
-            //services.AddScoped<IPostService, PostService>();
-            //services.AddScoped<IThemeService, ThemeService>();
+            services.AddScoped<LogRepository>(u => LogRepository.GetInstance());
+            services.AddScoped<LogLogic, LogLogic>();
         }
     }
 }

@@ -33,7 +33,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogsServer.BussinessLogic",
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AdminServer", "AdminServer", "{B2AEE436-B245-4AC9-B129-7392AAB4C97B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminServer", "AdminServer\AdminServer.csproj", "{D72F30AD-D153-42EA-8F85-46CE03219F59}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdminServer", "AdminServer\AdminServer.csproj", "{D72F30AD-D153-42EA-8F85-46CE03219F59}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogsHelper", "LogsHelper\LogsHelper.csproj", "{9085C417-D5E0-4BA9-8BAE-35FA6636B4E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,6 +91,10 @@ Global
 		{D72F30AD-D153-42EA-8F85-46CE03219F59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D72F30AD-D153-42EA-8F85-46CE03219F59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D72F30AD-D153-42EA-8F85-46CE03219F59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9085C417-D5E0-4BA9-8BAE-35FA6636B4E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9085C417-D5E0-4BA9-8BAE-35FA6636B4E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9085C417-D5E0-4BA9-8BAE-35FA6636B4E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9085C417-D5E0-4BA9-8BAE-35FA6636B4E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

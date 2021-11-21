@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using LogsHelper;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -39,21 +40,18 @@ namespace NewServer
 
         private static async Task StartUpSocketsServer(ServerConfiguration serverConfiguration)
         {
-            //LogEmitter logEmitter = new LogEmitter(serverConfiguration);
+            LogEmitter logEmitter = new LogEmitter();
             await HandleConnections(serverConfiguration);
+            
         }
 
          private static async Task HandleConnections(ServerConfiguration serverConfiguration)
          {
-             ConnectionsHandler connectionsHandler = new ConnectionsHandler(serverConfiguration);
+            ConnectionsHandler connectionsHandler = new ConnectionsHandler(serverConfiguration);
             connectionsHandler.StartListeningAsync();
          }
 
         
-        //public static IHostBuilder CreateHostBuilder(string[] args) =>
-        //    Host.CreateDefaultBuilder(args)
-        //        .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
-
         public static IHostBuilder CreateHostBuilder(string[] args, ServerConfiguration serverConfiguration)
         {
             string httpUrl = $"http://{serverConfiguration.ServerIP}:{serverConfiguration.GrpcApiHttpPort}/";

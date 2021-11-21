@@ -17,10 +17,13 @@
 
     <ItemGroup>
         <PackageReference Include="Grpc.AspNetCore" Version="2.34.0" />
+        <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\DataAccess\DataAccess.csproj" />
+      <ProjectReference Include="..\LogsHelper\LogsHelper.csproj" />
+      <ProjectReference Include="..\LogsServer\LogsServer.Domain\LogsServer.Domain.csproj" />
       <ProjectReference Include="..\Protocol\Protocol.csproj" />
     </ItemGroup>
 

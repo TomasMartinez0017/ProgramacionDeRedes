@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using DataAccess;
 using Domain;
+using LogsHelper;
+using LogsServer.Domain;
+using Newtonsoft.Json;
 using Protocol;
 
 namespace NewServer.Managers
@@ -12,39 +15,25 @@ namespace NewServer.Managers
     public class UserManager
     {
         private UserRepository _userRepository;
+        private ResponseHandler _responseHandler;
+        private LogEmitter _emitter;
 
         public UserManager()
         {
             _userRepository = UserRepository.GetInstance();
+            _responseHandler = new ResponseHandler();
+            _emitter = new LogEmitter();
         }
 
         public async Task<Frame> CreateUserAsync(Frame frame)
         {
-            Frame response = new Frame();
-            response.CreateFrame((int)Header.Response, (int)Command.SignUp);
-
-            string username = Encoding.UTF8.GetString(frame.Data);
-
-            if (!await _userRepository.UserExistsAsync(username))
-            {
-                User userToAdd = new User();
-                userToAdd.Username = username;
-                await _userRepository.AddUserAsync(userToAdd);
-
-                response.Data = frame.Data;
-                response.DataLength = response.Data.Length;
-            }
-            else
-            {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: User already exist.\n");
-                response.Status = (int)FrameStatus.Error;
-                response.DataLength = response.Data.Length;
-            }
-            return response;
+            return await _responseHandler.CreateSignUpResponseAsync(frame);
         }
 
         public async Task<Frame> UpdateUserAsync(Frame frame)
         {
+            string message;
+
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.UpdateUser);
 
@@ -56,19 +45,27 @@ namespace NewServer.Managers
 
                 response.Data = frame.Data;
                 response.DataLength = response.Data.Length;
+                message = "User updated successfully";
 
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: User already exist.\n");
+                message = "ERROR: User already exist.\n";
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.Status = (int)FrameStatus.Error;
                 response.DataLength = response.Data.Length;
+               
             }
+
+            _emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(names[0], "", message)), LogTag.UpdateUser);
+
             return response;
         }
 
         public async Task<Frame> DeleteUserAsync(Frame frame)
         {
+            string message;
+            
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.DeleteUser);
             string username = Encoding.UTF8.GetString(frame.Data);
@@ -81,13 +78,18 @@ namespace NewServer.Managers
 
                 response.Data = frame.Data;
                 response.DataLength = response.Data.Length;
+                message = "User deleted successfully";
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: User not found.\n");
+                message = "ERROR: User not found.\n";
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.Status = (int)FrameStatus.Error;
                 response.DataLength = response.Data.Length;
             }
+
+            _emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(username, "", message)), LogTag.DeleteUser);
+
             return response;
             
         } 

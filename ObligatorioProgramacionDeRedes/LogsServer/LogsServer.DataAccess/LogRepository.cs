@@ -36,13 +36,43 @@ namespace LogsServer.DataAccess
             _logs.Add(log);
             _logsSemaphore.Release();
         }
-        
-        public async Task<List<Log>> GetLogsByAsync(Func<Log, bool> criteria)
-        {
+
+        public async Task<List<Log>> GetLogsByUser(string username){
             await _logsSemaphore.WaitAsync();
-            List<Log> retrievedLogs = _logs.Where(criteria).ToList();
+            List<Log> listToReturn = new List<Log>();
+            foreach(Log log in this._logs){
+                if(log.LogInfo.UserName.Equals(username)){
+                    listToReturn.Add(log);
+                }
+            }
             _logsSemaphore.Release();
-            return retrievedLogs;
+            return listToReturn;
+
         }
+
+        public async Task<List<Log>> GetLogsByGameTitle(string title){
+            await _logsSemaphore.WaitAsync();
+            List<Log> listToReturn = new List<Log>();
+            foreach(Log log in this._logs){
+                if(log.LogInfo.GameTitle.Equals(title)){
+                    listToReturn.Add(log);
+                }
+            }
+            _logsSemaphore.Release();
+            return listToReturn;
+        }
+
+        public async Task<List<Log>> GetLogsByDate(string stringDate){
+            await _logsSemaphore.WaitAsync();
+            List<Log> listToReturn = new List<Log>();
+            foreach(Log log in this._logs){
+                if(log.CreatedAt.ToString("dd/MM/yyyy").Equals(stringDate)){
+                    listToReturn.Add(log);
+                }
+            }
+            _logsSemaphore.Release();
+            return listToReturn;
+        }
+        
     }
 }

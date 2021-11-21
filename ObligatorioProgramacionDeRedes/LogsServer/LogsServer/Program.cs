@@ -27,17 +27,25 @@ namespace LogsServer
             };
             
             SetupLogListener(logsServerConfiguration);
-            CreateHostBuilder(args).Build().Run();
+            CreateHostBuilder(args, logsServerConfiguration).Build().Run();
         }
         
         public static void SetupLogListener(LogServerConfiguration configuration)
         {
-            //LogReceiver logReceiver = new LogReceiver(configuration);
-            //logReceiver.ReceiveServerLogs();
+            LogReceiver logReceiver = new LogReceiver(configuration);
+            logReceiver.ReceiveServerLogs();
         }
+        public static IHostBuilder CreateHostBuilder(string[] args, LogServerConfiguration configuration)
+        {
+            string httpUrl = $"http://localhost:{configuration.WebApiHttpPort}/";
+            string httpsUrl = $"https://localhost:{configuration.WebApiHttpsPort}/";
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseUrls(httpUrl, httpsUrl);
+                });
+        }
     }
 }

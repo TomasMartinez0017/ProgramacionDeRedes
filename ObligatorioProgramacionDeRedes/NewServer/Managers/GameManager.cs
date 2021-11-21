@@ -5,16 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using DataAccess;
 using Domain;
+using LogsHelper;
+using LogsServer.Domain;
+using Newtonsoft.Json;
 using Protocol;
 namespace NewServer.Managers
 {
     public class GameManager
     {
         private ResponseHandler responseHandler;
+        private LogEmitter emitter;
 
         public GameManager()
         {
             responseHandler = new ResponseHandler();
+            emitter = new LogEmitter();
         }
 
         public async Task<Frame> CreateGameAsync(Frame frame)
@@ -68,13 +73,15 @@ namespace NewServer.Managers
                 
             response.Data = Encoding.UTF8.GetBytes(message);
             response.DataLength = response.Data.Length;
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(userToAddGame.Username, gameThatUserWants.Title, message)), LogTag.BuyGame);
+
             return response;
         }
         
         public async Task<Frame> DissociateGameToUser(Frame frame)
         {
             Frame response = new Frame();
-            response.CreateFrame((int)Header.Response, (int)Command.BuyGame);
+            response.CreateFrame((int)Header.Response, (int)Command.DeleteGameFromUser);
             string[] data = Encoding.UTF8.GetString(frame.Data).Split('#');
             
             string message = null;
@@ -107,12 +114,16 @@ namespace NewServer.Managers
                 
             response.Data = Encoding.UTF8.GetBytes(message);
             response.DataLength = response.Data.Length;
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(userToDeleteGame.Username, gameThatUserWantsToDelete.Title, message)), LogTag.DeleteGameFromUser);
+
             return response;
         }
 
 
         public async Task<Frame> ShowGameAsync(Frame frame)
         {
+            string message;
+
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.ShowGame);
 
@@ -128,13 +139,17 @@ namespace NewServer.Managers
                 response.Data = gameData;
                 response.DataLength = gameData.Length;
                 response.Status = (int)FrameStatus.Ok;
+                message = "Game showed successfully";
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found.\n");
+                message = "ERROR: Game not found.\n";
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
                 response.Status = (int)FrameStatus.Error;
             }
+
+             emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameName, message)), LogTag.ShowGame);
 
             return response;
 

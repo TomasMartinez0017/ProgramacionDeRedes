@@ -8,10 +8,16 @@ using System.Threading.Tasks;
 using CustomExceptions;
 using DataAccess;
 using Domain;
+using LogsHelper;
+using LogsServer.Domain;
+using Newtonsoft.Json;
+
 namespace Protocol
 {
     public class ResponseHandler
     {
+        private LogEmitter emitter = new LogEmitter();
+
         public string ProcessResponse(Frame frame)
         {
             string response = null;
@@ -253,6 +259,7 @@ namespace Protocol
 
                 response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
+                emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", newGame.Title, message)), LogTag.PublishGame);
                 return response;
             }
             catch (InvalidGameException e)
@@ -278,6 +285,8 @@ namespace Protocol
 
         private async Task<Frame> CreateShowCatalogResponseAsync(Frame frame)
         {
+            string message;
+
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.ShowCatalog);
             
@@ -291,14 +300,16 @@ namespace Protocol
 
                 response.Data = serializedList;
                 response.DataLength = response.Data.Length;
+                message = "Catalog showed successfully";
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: The catalog is empty.\n");
+                message = "ERROR: The catalog is empty.\n";
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
             }
-            
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("","", message)), LogTag.ShowCatalog);
             return response;
         }
 
@@ -334,8 +345,10 @@ namespace Protocol
             return dataToReturn.ToArray();
         }
 
-        private async Task<Frame> CreateSignUpResponseAsync(Frame frame)
+        public async Task<Frame> CreateSignUpResponseAsync(Frame frame)
         {
+            string message;
+
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.SignUp);
             
@@ -351,19 +364,24 @@ namespace Protocol
                 
                 response.Data = frame.Data;
                 response.DataLength = response.Data.Length;
+                message = "User added successfully";
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: User already exist.\n");
+                message = "ERROR: User already exist.\n";
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.Status = (int) FrameStatus.Error;
                 response.DataLength = response.Data.Length;
             }
-            
+
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(username,"", message)), LogTag.SignUp);
             return response;
         }
 
         private async Task<Frame> CreateLogInResponseAsync(Frame frame, List<User> usersConnected)
         {
+            string message;
+
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.LogIn);
             
@@ -372,7 +390,8 @@ namespace Protocol
 
             if (UserAlreadyLoggedIn(username, usersConnected))
             {
-                response.Data = response.Data = Encoding.UTF8.GetBytes("ERROR: User already has an active session.\n");
+                message = "ERROR: User already has an active session.\n";
+                response.Data = response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
                 return response;
@@ -381,14 +400,17 @@ namespace Protocol
             {
                 response.Data = frame.Data;
                 response.DataLength = response.Data.Length;
+                message = "User logged in successfully";
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: User does not exist.\n");
+                message = "ERROR: User does not exist.\n";
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
             }
-            
+
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(username,"", message)), LogTag.LogIn);
             return response;
         }
 
@@ -406,6 +428,8 @@ namespace Protocol
 
         private async Task<Frame> CreateUploadImageResponseAsync(Frame frame)
         {
+            string message;
+            
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.UploadImage);
             
@@ -428,20 +452,23 @@ namespace Protocol
 
             if (gameToUploadImage == null)
             {
+                message = "ERROR: Game not found.\n";
                 response.Status = (int) FrameStatus.Error;
-                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found.\n");
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
             }
             else
             {
+                message = "Image uploaded.\n";
                 gameToUploadImage.Image = Directory.GetCurrentDirectory() + "\\" + imageName;
             
                 File.WriteAllBytes(Directory.GetCurrentDirectory() + "\\" + imageName, image);
 
-                response.Data = Encoding.UTF8.GetBytes("Image uploaded.\n");
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
             }
-            
+
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameName, message)), LogTag.UploadImage);
             return response;
         }
 
@@ -502,7 +529,8 @@ namespace Protocol
 
                     response.Data = Encoding.UTF8.GetBytes(message);
                     response.DataLength = response.Data.Length;
-                
+                    emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(user.Username, gameName, message)), LogTag.CreateReview);
+
                     return response;
                 }
                 catch (InvalidReviewException e)
@@ -510,6 +538,8 @@ namespace Protocol
                     response.Data = Encoding.UTF8.GetBytes(e.Message);
                     response.DataLength = response.Data.Length;
                     response.Status = (int) FrameStatus.Error;
+                    emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(user.Username, gameName, e.Message)), LogTag.CreateReview);
+
                     return response;
                 }
             }
@@ -519,6 +549,8 @@ namespace Protocol
                 response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
+                emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(user.Username, gameName, message)), LogTag.CreateReview);
+
                 return response;
             }
         }
@@ -529,6 +561,7 @@ namespace Protocol
             response.CreateFrame((int)Header.Response, (int)Command.BuyGame);
             
             string message = null;
+            string gameName = Encoding.UTF8.GetString(frame.Data);
             
             if (!String.IsNullOrEmpty(user.Username))
             {
@@ -536,7 +569,7 @@ namespace Protocol
                GameRepository gameRepository = GameRepository.GetInstance();
                
                User userToAddGame = await userRepository.GetUserAsync(user.Username);
-               string gameName = Encoding.UTF8.GetString(frame.Data);
+               
                Game gameThatUserWants = await gameRepository.GetGameAsync(gameName);
                
                if (gameThatUserWants != null)
@@ -561,6 +594,8 @@ namespace Protocol
                 
                response.Data = Encoding.UTF8.GetBytes(message);
                response.DataLength = response.Data.Length;
+               emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(user.Username, gameName, message)), LogTag.BuyGame);
+
                return response;
 
             }
@@ -569,12 +604,16 @@ namespace Protocol
                 message = "ERROR: User must login before buying a game.\n";
                 response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
+                emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(user.Username, gameName, message)), LogTag.BuyGame);
+
                 return response;
             }
         }
 
         private async Task<Frame> CreateShowGameReviewsResponseAsync(Frame frame)
         {
+            string message;
+
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.ShowGameReviews);;
 
@@ -597,21 +636,26 @@ namespace Protocol
 
                     response.Data = serializedList;
                     response.DataLength = response.Data.Length;
+                    message = "Game reviews showed successfully";
                 }
                 else
                 {
-                    response.Data = Encoding.UTF8.GetBytes("Game has no reviews.\n");
+                    message = "Game has no reviews.\n";
+                    response.Data = Encoding.UTF8.GetBytes(message);
                     response.DataLength = response.Data.Length;
                 }
                 
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found.\n");
+                message = "ERROR: Game not found.\n";
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
             }
-            
+
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameName, message)), LogTag.ShowGameReviews);
+
             return response;
 
         }
@@ -680,6 +724,8 @@ namespace Protocol
 
             response.Data = Encoding.UTF8.GetBytes(message);
             response.DataLength = response.Data.Length;
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameName, message)), LogTag.DeleteGame);
+
             return response;
         }
         
@@ -713,11 +759,15 @@ namespace Protocol
 
             response.Data = Encoding.UTF8.GetBytes(message);
             response.DataLength = response.Data.Length;
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameSearched.Title, message)), LogTag.UpdateGame);
+
             return response;
         }
 
         private async Task<Frame> CreateDownloadGameCoverResponseAsync(Frame frame)
         {
+            string message;
+
             Frame response = new Frame();
             response.CreateFrame((int)Header.Response, (int)Command.DownLoadImage);
             string gameName = Encoding.UTF8.GetString(frame.Data);
@@ -740,10 +790,12 @@ namespace Protocol
                 
                     response.Data = imageResponseData.ToArray();
                     response.DataLength = response.Data.Length;
+                    message = "Image uploaded successfully";
                 }
                 else
                 {
-                    response.Data = Encoding.UTF8.GetBytes("ERROR: Games does not contain a cover.\n");
+                    message = "ERROR: Games does not contain a cover.\n";
+                    response.Data = Encoding.UTF8.GetBytes(message);
                     response.DataLength = response.Data.Length;
                     response.Status = (int) FrameStatus.Error;
                 }
@@ -751,10 +803,13 @@ namespace Protocol
             }
             else
             {
-                response.Data = Encoding.UTF8.GetBytes("ERROR: Game not found.\n");
+                message = "ERROR: Game not found.\n";
+                response.Data = Encoding.UTF8.GetBytes(message);
                 response.DataLength = response.Data.Length;
                 response.Status = (int) FrameStatus.Error;
             }
+
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo("", gameName, message)), LogTag.UploadImage);
             
             return response;
         }
@@ -815,6 +870,8 @@ namespace Protocol
             byte[] serializedList = SerializeListOfGames(serializedGames);
             response.Data = serializedList;
             response.DataLength = response.Data.Length;
+            emitter.EmitLog(JsonConvert.SerializeObject(new LogInfo(gameName, "", "Search operation completed")), LogTag.SearchGame);
+
             return response;
         }
 

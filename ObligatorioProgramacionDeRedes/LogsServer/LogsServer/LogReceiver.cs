@@ -3,6 +3,7 @@ using System;
 using LogsServer.DataAccess;
 using RabbitMQ.Client.Events;
 using System.Text;
+using LogsServer.Domain;
 
 namespace LogsServer
 {
@@ -10,22 +11,22 @@ namespace LogsServer
     {
         private IModel _channel;
         private string _queueName;
-        //private LogProcessor _logProcessor;
+        private LogProcessor _logProcessor;
         private LogRepository _logRepository;
 
         public LogReceiver(LogServerConfiguration configuration)
         {
-            ConnectionFactory connectionFactory = new ConnectionFactory() //1 - Defino la conexion
+            ConnectionFactory connectionFactory = new ConnectionFactory() 
             {
                 HostName = configuration.RabbitMQServerIP,
                 Port = Int32.Parse(configuration.RabbitMQServerPort)
             };
-            IConnection connection = connectionFactory.CreateConnection(); // 2 - Creamos la conexion
+            IConnection connection = connectionFactory.CreateConnection(); 
             _queueName = configuration.LogsQueueName;
-            _channel = connection.CreateModel();                           //3 / Definimos el canal de conexion
+            _channel = connection.CreateModel();                          
             _channel.QueueDeclare(_queueName, false, false, false, null);
             _logRepository = LogRepository.GetInstance();
-            //_logProcessor = new LogProcessor();
+            _logProcessor = new LogProcessor();
         }
 
         public void ReceiveServerLogs()
@@ -35,9 +36,9 @@ namespace LogsServer
             {
                 byte[] body = eventArgs.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
-                //Log processedLog = _logProcessor.ProcessLog(message);
+                Log processedLog = _logProcessor.ProcessLog(message);
 
-                //await _logRepository.StoreAsync(processedLog);
+                await _logRepository.StoreAsync(processedLog);
                 //Console.WriteLine(processedLog.ToString());
             };
 

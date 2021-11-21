@@ -15,8 +15,7 @@ namespace NewServer
         private ServerState _serverState;
         private SemaphoreSlim _connectionsListSemaphore;
         private SemaphoreSlim _serverStateSemaphore;
-        private Socket _serverSocket;
-
+        private Socket _serverSocket;        
         public ConnectionsHandler(ServerConfiguration configuration)
         {
             _connections = new List<Connection>();
@@ -39,8 +38,8 @@ namespace NewServer
             {
                 try
                 {
-                    Connection clientConnection = new Connection(await _serverSocket.AcceptAsync());
-                    clientConnection.StartConnectionAsync();
+                   Connection clientConnection = new Connection(await _serverSocket.AcceptAsync());
+                     clientConnection.StartConnectionAsync();
                     await AddConnectionAsync(clientConnection);
                     Console.WriteLine("Accepted new client connection");
                 }

@@ -9,20 +9,9 @@ namespace Server
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("Starting Server");
-            await HandleConnections();
+            Console.WriteLine("Doesn't work anymore :(");
             
         }
 
-        static async Task HandleConnections()
-        {
-            /*
-            ConnectionsHandler connectionsHandler = new ConnectionsHandler();
-            await connectionsHandler.StartListeningAsync();
-            Console.WriteLine("Press any key to shut down the server");
-            Console.ReadLine();
-            await connectionsHandler.StartShutServerDownAsync();
-            */
-        }
     }
 }

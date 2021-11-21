@@ -16,6 +16,7 @@
         LogIn,
         UpdateUser,
         DeleteUser,
-        ShowGame
+        ShowGame,
+        DeleteGameFromUser
     }
 }
