@@ -16,7 +16,7 @@ namespace NewServer
         private SemaphoreSlim _connectionsListSemaphore;
         private SemaphoreSlim _serverStateSemaphore;
         private Socket _serverSocket;        
-        public ConnectionsHandler(ServerConfiguration configuration)
+        public ConnectionsHandler()
         {
             _connections = new List<Connection>();
             _serverState = ServerState.Down;
@@ -24,8 +24,8 @@ namespace NewServer
             _connectionsListSemaphore = new SemaphoreSlim(1);
 
             _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(configuration.ServerIP), 
-                Int32.Parse(configuration.ServerPort));
+            IPEndPoint serverIpEndPoint = new IPEndPoint(IPAddress.Parse(ConfigurationManager.AppSettings["ServerIP"]), 
+                Int32.Parse(ConfigurationManager.AppSettings["ServerPort"]));
             _serverSocket.Bind(serverIpEndPoint);
         }
 

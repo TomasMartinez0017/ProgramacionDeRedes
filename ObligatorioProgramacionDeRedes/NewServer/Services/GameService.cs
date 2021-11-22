@@ -89,13 +89,16 @@ namespace NewServer.Services
         public override async Task<UpdateGameResponse> UpdateGame(UpdateGameRequest request, ServerCallContext context)
         {
             UpdateGameResponse gameResponse = new UpdateGameResponse();
-            if (Int32.Parse(request.Rating)<0 || Int32.Parse(request.Rating) > 4)
+            if (!string.IsNullOrEmpty(request.Rating))
             {
-                gameResponse.Ok = false;
-                gameResponse.Message = "Error updating game";
-                return gameResponse;
+                if (Int32.Parse(request.Rating)<0 || Int32.Parse(request.Rating) > 4)
+                {
+                    gameResponse.Ok = false;
+                    gameResponse.Message = "Error updating game";
+                    return gameResponse;
+                }
             }
-            
+
             Frame requestFrame = new Frame();
             byte[] gameData = Encoding.UTF8.GetBytes(request.OldTitle + "#" + request.Title + "#" + request.Genre + "#" + request.Rating + "#" + request.Description);
             requestFrame.Data = gameData;

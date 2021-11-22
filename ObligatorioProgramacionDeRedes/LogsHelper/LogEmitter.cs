@@ -16,11 +16,11 @@ namespace LogsHelper
         {
             ConnectionFactory connectionFactory = new ConnectionFactory()
             {
-                HostName = "127.0.0.1",
-                Port = Int32.Parse("5672")
+                HostName = ConfigurationManager.AppSettings["RabbitMQServerIP"],
+                Port = Int32.Parse(ConfigurationManager.AppSettings["RabbitMQServerPort"])
             };
             IConnection connection = connectionFactory.CreateConnection();
-            _queueName = "ServerLogs";
+            _queueName = ConfigurationManager.AppSettings["LogsQueueName"];
             _channel = connection.CreateModel();
             _channel.QueueDeclare(_queueName, false, false, false, null);
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,46 +17,29 @@ namespace NewServer
         {
             Console.WriteLine("Server is starting...");
 
-            IConfigurationRoot config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false)
-                .Build();
+            await StartUpSocketsServer();
 
-            ServerConfiguration serverConfiguration = new ServerConfiguration()
-            {
-                RabbitMQServerIP = config.GetSection("ServerConfiguration").GetSection("RabbitMQServerIP").Value,
-                RabbitMQServerPort = config.GetSection("ServerConfiguration").GetSection("RabbitMQServerPort").Value,
-                LogsQueueName = config.GetSection("ServerConfiguration").GetSection("LogsQueueName").Value,
-                ServerPort = config.GetSection("ServerConfiguration").GetSection("ServerPort").Value,
-                ServerIP = config.GetSection("ServerConfiguration").GetSection("ServerIP").Value,
-                GrpcApiHttpPort = config.GetSection("ServerConfiguration").GetSection("GrpcApiHttpPort").Value,
-                GrpcApiHttpsPort = config.GetSection("ServerConfiguration").GetSection("GrpcApiHttpsPort").Value
-            };
-
-            await StartUpSocketsServer(serverConfiguration);
-
-            CreateHostBuilder(args, serverConfiguration).Build().Run();
-
-            
+            CreateHostBuilder(args).Build().Run();
         }
 
-        private static async Task StartUpSocketsServer(ServerConfiguration serverConfiguration)
+        private static async Task StartUpSocketsServer()
         {
             LogEmitter logEmitter = new LogEmitter();
-            await HandleConnections(serverConfiguration);
+            await HandleConnections();
             
         }
 
-         private static async Task HandleConnections(ServerConfiguration serverConfiguration)
+         private static async Task HandleConnections()
          {
-            ConnectionsHandler connectionsHandler = new ConnectionsHandler(serverConfiguration);
+            ConnectionsHandler connectionsHandler = new ConnectionsHandler();
             connectionsHandler.StartListeningAsync();
          }
 
         
-        public static IHostBuilder CreateHostBuilder(string[] args, ServerConfiguration serverConfiguration)
+        public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            string httpUrl = $"http://{serverConfiguration.ServerIP}:{serverConfiguration.GrpcApiHttpPort}/";
-            string httpsUrl = $"https://{serverConfiguration.ServerIP}:{serverConfiguration.GrpcApiHttpsPort}/";
+            string httpUrl = $"http://{ConfigurationManager.AppSettings["ServerIP"]}:{ConfigurationManager.AppSettings["GrpcApiHttpPort"]}/";
+            string httpsUrl = $"https://{ConfigurationManager.AppSettings["ServerIP"]}:{ConfigurationManager.AppSettings["GrpcApiHttpsPort"]}/";
 
             return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>

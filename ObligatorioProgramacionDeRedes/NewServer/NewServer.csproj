@@ -5,8 +5,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Content Remove="App.config" />
+    </ItemGroup>
+
+    <ItemGroup>
       <None Remove="Protos\games.proto" />
       <None Remove="Protos\users.proto" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="App.config" />
     </ItemGroup>
 
     <ItemGroup>

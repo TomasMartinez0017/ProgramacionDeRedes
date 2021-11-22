@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -14,31 +15,20 @@ namespace LogsServer
         public static void Main(string[] args)
         {
             Console.WriteLine("Logs server is starting...");
-            IConfigurationRoot config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false)
-                .Build();
-            LogServerConfiguration logsServerConfiguration = new LogServerConfiguration()
-            {
-                RabbitMQServerIP = config.GetSection("LogsServerConfiguration").GetSection("RabbitMQServerIP").Value,
-                RabbitMQServerPort = config.GetSection("LogsServerConfiguration").GetSection("RabbitMQServerPort").Value,
-                LogsQueueName = config.GetSection("LogsServerConfiguration").GetSection("LogsQueueName").Value,
-                WebApiHttpPort = config.GetSection("LogsServerConfiguration").GetSection("WebApiHttpPort").Value,
-                WebApiHttpsPort = config.GetSection("LogsServerConfiguration").GetSection("WebApiHttpsPort").Value,
-            };
             
-            SetupLogListener(logsServerConfiguration);
-            CreateHostBuilder(args, logsServerConfiguration).Build().Run();
+            SetupLogListener();
+            CreateHostBuilder(args).Build().Run();
         }
         
-        public static void SetupLogListener(LogServerConfiguration configuration)
+        public static void SetupLogListener()
         {
-            LogReceiver logReceiver = new LogReceiver(configuration);
+            LogReceiver logReceiver = new LogReceiver();
             logReceiver.ReceiveServerLogs();
         }
-        public static IHostBuilder CreateHostBuilder(string[] args, LogServerConfiguration configuration)
+        public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            string httpUrl = $"http://localhost:{configuration.WebApiHttpPort}/";
-            string httpsUrl = $"https://localhost:{configuration.WebApiHttpsPort}/";
+            string httpUrl = $"http://localhost:{ConfigurationManager.AppSettings["WebApiHttpPort"]}/";
+            string httpsUrl = $"https://localhost:{ConfigurationManager.AppSettings["WebApiHttpsPort"]}/";
 
             return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -52,19 +53,7 @@ namespace AdminServer
 
         private void AddServices(IServiceCollection services)
         {
-            IConfigurationRoot config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false)
-                .Build();
-            AdminServerConfiguration configuration = new AdminServerConfiguration()
-            {
-                AdminServerIP = config.GetSection("AdminServerConfiguration").GetSection("AdminServerIP").Value,
-                AdminServerHttpPort = config.GetSection("AdminServerConfiguration").GetSection("AdminServerHttpPort").Value,
-                AdminServerHttpsPort = config.GetSection("AdminServerConfiguration").GetSection("AdminServerHttpsPort").Value,
-                GrpcServerApiHttpPort = config.GetSection("AdminServerConfiguration").GetSection("GrpcServerApiHttpPort").Value,
-                GrpcServerApiHttpsPort = config.GetSection("AdminServerConfiguration").GetSection("GrpcServerApiHttpsPort").Value,
-                GrpcServerIP = config.GetSection("AdminServerConfiguration").GetSection("GrpcServerIP").Value
-            };
-            var channel = GrpcChannel.ForAddress($"https://{configuration.GrpcServerIP}:{configuration.GrpcServerApiHttpsPort}");
+            var channel = GrpcChannel.ForAddress($"https://{ConfigurationManager.AppSettings["GrpcServerIP"]}:{ConfigurationManager.AppSettings["GrpcServerApiHttpsPort"]}");
 
             services.AddScoped<UserAdmin.UserAdminClient>(t => new UserAdmin.UserAdminClient(channel));
             services.AddScoped<GameAdmin.GameAdminClient>(t => new GameAdmin.GameAdminClient(channel));

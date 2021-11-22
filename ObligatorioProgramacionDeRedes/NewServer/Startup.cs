@@ -49,21 +49,6 @@ namespace NewServer
 
         private void RegisterServices(IServiceCollection services)
         {
-            IConfigurationRoot config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false)
-                .Build();
-            ServerConfiguration serverConfiguration = new ServerConfiguration()
-            {
-                RabbitMQServerIP = config.GetSection("ServerConfiguration").GetSection("RabbitMQServerIP").Value,
-                RabbitMQServerPort = config.GetSection("ServerConfiguration").GetSection("RabbitMQServerPort").Value,
-                LogsQueueName = config.GetSection("ServerConfiguration").GetSection("LogsQueueName").Value,
-                ServerPort = config.GetSection("ServerConfiguration").GetSection("ServerPort").Value,
-                ServerIP = config.GetSection("ServerConfiguration").GetSection("ServerIP").Value,
-                GrpcApiHttpPort = config.GetSection("ServerConfiguration").GetSection("GrpcApiHttpPort").Value,
-                GrpcApiHttpsPort = config.GetSection("ServerConfiguration").GetSection("GrpcApiHttpsPort").Value
-            };
-
-            services.AddScoped<ServerConfiguration>(s => serverConfiguration);
             services.AddScoped<UserManager, UserManager>();
             services.AddScoped<GameManager, GameManager>();
         }

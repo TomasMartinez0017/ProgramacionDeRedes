@@ -4,6 +4,7 @@ using LogsServer.DataAccess;
 using RabbitMQ.Client.Events;
 using System.Text;
 using LogsServer.Domain;
+using System.Configuration;
 
 namespace LogsServer
 {
@@ -14,15 +15,15 @@ namespace LogsServer
         private LogProcessor _logProcessor;
         private LogRepository _logRepository;
 
-        public LogReceiver(LogServerConfiguration configuration)
+        public LogReceiver()
         {
             ConnectionFactory connectionFactory = new ConnectionFactory() 
             {
-                HostName = configuration.RabbitMQServerIP,
-                Port = Int32.Parse(configuration.RabbitMQServerPort)
+                HostName = ConfigurationManager.AppSettings["RabbitMQServerIP"],
+                Port = Int32.Parse(ConfigurationManager.AppSettings["RabbitMQServerPort"])
             };
             IConnection connection = connectionFactory.CreateConnection(); 
-            _queueName = configuration.LogsQueueName;
+            _queueName = ConfigurationManager.AppSettings["LogsQueueName"];
             _channel = connection.CreateModel();                          
             _channel.QueueDeclare(_queueName, false, false, false, null);
             _logRepository = LogRepository.GetInstance();
@@ -31,7 +32,7 @@ namespace LogsServer
 
         public void ReceiveServerLogs()
         {
-            EventingBasicConsumer consumer = new EventingBasicConsumer(_channel);       // 5 - definimos como consumimos los mensajes
+            EventingBasicConsumer consumer = new EventingBasicConsumer(_channel);       //  - definimos como consumimos los mensajes
             consumer.Received += async (sender, eventArgs) =>
             {
                 byte[] body = eventArgs.Body.ToArray();

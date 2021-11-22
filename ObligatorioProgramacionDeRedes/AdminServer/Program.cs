@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,27 +15,13 @@ namespace AdminServer
         public static void Main(string[] args)
         {
             Console.WriteLine("Admin server is starting...");
-
-            IConfigurationRoot config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false)
-                .Build();
-
-            AdminServerConfiguration adminServerConfiguration = new AdminServerConfiguration()
-            {
-                AdminServerIP = config.GetSection("AdminServerConfiguration").GetSection("AdminServerIP").Value,
-                AdminServerHttpPort = config.GetSection("AdminServerConfiguration").GetSection("AdminServerHttpPort").Value,
-                AdminServerHttpsPort = config.GetSection("AdminServerConfiguration").GetSection("AdminServerHttpsPort").Value,
-                GrpcServerApiHttpPort = config.GetSection("AdminServerConfiguration").GetSection("GrpcServerApiHttpPort").Value,
-                GrpcServerApiHttpsPort = config.GetSection("AdminServerConfiguration").GetSection("GrpcServerApiHttpsPort").Value,
-                GrpcServerIP = config.GetSection("AdminServerConfiguration").GetSection("GrpcServerIP").Value
-            };
-            CreateHostBuilder(args, adminServerConfiguration).Build().Run();
+            CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args, AdminServerConfiguration configuration)
+        public static IHostBuilder CreateHostBuilder(string[] args)
         {
-            string httpUrl = $"http://{configuration.AdminServerIP}:{configuration.AdminServerHttpPort}/";
-            string httpsUrl = $"https://{configuration.AdminServerIP}:{configuration.AdminServerHttpsPort}/";
+            string httpUrl = $"http://{ConfigurationManager.AppSettings["AdminServerIP"]}:{ConfigurationManager.AppSettings["AdminServerHttpPort"]}/";
+            string httpsUrl = $"https://{ConfigurationManager.AppSettings["AdminServerIP"]}:{ConfigurationManager.AppSettings["AdminServerHttpsPort"]}/";
 
             return Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
