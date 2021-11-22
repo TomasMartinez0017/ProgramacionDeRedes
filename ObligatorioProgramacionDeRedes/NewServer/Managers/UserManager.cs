@@ -45,7 +45,7 @@ namespace NewServer.Managers
 
                 response.Data = frame.Data;
                 response.DataLength = response.Data.Length;
-                message = "User updated successfully";
+                message = $"UserName updated to {names[1]} successfully";
 
             }
             else

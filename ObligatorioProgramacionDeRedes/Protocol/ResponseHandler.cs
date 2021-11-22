@@ -750,7 +750,15 @@ namespace Protocol
             if (await gameRepository.GameExistsAsync(gameSearched))
             {
                 await gameRepository.UpdateGameAsync(gameNameSearched, gameUpdated);
-                message = "Game updated successfully.\n";
+                if (!string.IsNullOrEmpty(gameUpdated.Title))
+                {
+                    message = $"Game updated name title to {gameUpdated.Title} successfully.\n";
+                    
+                }
+                else
+                {
+                    message = "Game updated successfully.\n"; 
+                }
             }
             else
             {
